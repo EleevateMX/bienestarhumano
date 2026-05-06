@@ -6,7 +6,7 @@ const USERS = {
   alejandra: { name: 'Alejandra', password: 'Alejandra2026', color:'#56AB2F', role:'admin' },
   chucho:    { name: 'Chucho',    password: 'Chucho2026',    color:'#0E2A6B', role:'admin' }
 };
-const APPS_SCRIPT_URL = '';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwqDq6v_wpk7V-0OQTOHJYXv7JFm1UF6EuQkuTw11gLaNvv_0DXYCXmppCWhVEz4Tgoqw/exec';
 const MODULES = [
   {
     "id": "azcorra",
