@@ -14,7 +14,7 @@ const USERS = {
 /* ENDPOINT DE GOOGLE APPS SCRIPT
    Reemplaza esta URL por la del Web App publicado en Apps Script.
    Si está vacío, el sistema funciona 100% en LocalStorage. */
-const APPS_SCRIPT_URL = ''; // Ejemplo: 'https://script.google.com/macros/s/AKfy.../exec'
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwqDq6v_wpk7V-0OQTOHJYXv7JFm1UF6EuQkuTw11gLaNvv_0DXYCXmppCWhVEz4Tgoqw/exec'; // Ejemplo: 'https://script.google.com/macros/s/AKfy.../exec'
 
 /* MÓDULOS MÉDICOS — coordenadas aproximadas en Mérida, Yucatán
    Lat/Lng centradas por colonia. Pueden ajustarse después. */
