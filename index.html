@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0E2A6B" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>Bienestar Humano · Indicadores · Ayuntamiento de Mérida</title>
+<script>
+  (function(){
+    var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth <= 760;
+    var wantsDesktop = location.search.indexOf('desktop=1') !== -1;
+    if(isMobile && !wantsDesktop && !/mobile\.html$/i.test(location.pathname)){
+      location.replace('mobile.html?v=14.2');
+    }
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<link rel="stylesheet" href="styles.css?v=14.2" />
+</head>
+<body>
+
+<!-- ===================== PANTALLA DE CARGA ===================== -->
+<div id="splash" class="splash">
+  <div class="splash-logo">
+    <img src="logo-white.png?v=14.2" alt="Bienestar Humano" class="splash-img"
+         onload="document.getElementById('splashSvgFallback')?.remove();"
+         onerror="this.remove();" />
+    <svg viewBox="0 0 100 100" class="splash-svg" id="splashSvgFallback">
+      <defs>
+        <linearGradient id="gradLeaf" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#A8E063"/>
+          <stop offset="100%" stop-color="#56AB2F"/>
+        </linearGradient>
+      </defs>
+      <path class="leaf-path" d="M50 15 C25 25, 15 50, 30 80 L50 90 L70 80 C85 50, 75 25, 50 15 Z" fill="url(#gradLeaf)"/>
+    </svg>
+    <h1 class="splash-title">Bienestar Humano</h1>
+    <p class="splash-sub">Ayuntamiento de Mérida · 2024-2027</p>
+    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+  </div>
+</div>
+
+<!-- ===================== PARTÍCULAS DE FONDO ===================== -->
+<canvas id="particles"></canvas>
+
+<!-- ===================== LOGIN ===================== -->
+<section id="login" class="login hidden">
+  <div class="login-bg-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+  </div>
+
+  <div class="login-card">
+    <div class="login-brand">
+      <img src="logo.png?v=14.2" alt="Dirección de Bienestar Humano" class="login-logo"
+           onload="document.getElementById('loginSvgFallback')?.remove();"
+           onerror="this.remove();" />
+      <div id="loginSvgFallback" class="login-fallback">
+        <svg viewBox="0 0 100 100" class="brand-mark">
+          <defs>
+            <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#A8E063"/>
+              <stop offset="100%" stop-color="#56AB2F"/>
+            </linearGradient>
+          </defs>
+          <path d="M50 15 C25 25, 15 50, 30 80 L50 90 L70 80 C85 50, 75 25, 50 15 Z" fill="url(#brandGrad)"/>
+        </svg>
+        <div>
+          <h2>Dirección de</h2>
+          <h1>Bienestar Humano</h1>
+        </div>
+      </div>
+    </div>
+
+    <p class="login-welcome">Sistema de Indicadores · Salud, Educación y Deporte</p>
+
+    <form id="loginForm" class="login-form">
+      <div class="user-grid user-grid-compact">
+        <button type="button" class="user-chip" data-user="alejandra_mejia">
+          <span class="user-avatar" style="background:linear-gradient(135deg,#A8E063,#56AB2F)">A</span>
+          <span>Alejandra Mejía</span>
+        </button>
+        <button type="button" class="user-chip" data-user="jesus_perez">
+          <span class="user-avatar" style="background:linear-gradient(135deg,#0E2A6B,#1E50C5)">J</span>
+          <span>Jesús Pérez</span>
+        </button>
+        <button type="button" class="user-chip" data-user="alfonso_avila">
+          <span class="user-avatar" style="background:linear-gradient(135deg,#1E50C5,#0E2A6B)">A</span>
+          <span>Alfonso Ávila</span>
+        </button>
+        <button type="button" class="user-chip" data-user="crescencio_gutierrez">
+          <span class="user-avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706)">C</span>
+          <span>Cresencio Gutiérrez</span>
+        </button>
+        <button type="button" class="user-chip user-chip-wide" data-user="ivan_herrera">
+          <span class="user-avatar" style="background:linear-gradient(135deg,#8B5CF6,#0E2A6B)">I</span>
+          <span>Iván Herrera</span>
+        </button>
+      </div>
+
+      <div class="input-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" placeholder="Ingresa tu contraseña" autocomplete="current-password" />
+      </div>
+
+      <button type="submit" class="btn-login">
+        <span>Ingresar al Sistema</span>
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <p id="loginError" class="login-error"></p>
+    </form>
+
+    <div class="login-footer">
+      <small>© 2024-2027 · H. Ayuntamiento de Mérida</small>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== APP PRINCIPAL ===================== -->
+<main id="app" class="app hidden">
+
+  <!-- Selector inicial de tablero -->
+  <section id="programGate" class="program-gate hidden">
+    <div class="program-panel">
+      <div class="program-brand"><img src="logo.png?v=14.2" alt="Bienestar Humano"></div>
+      <span class="program-eyebrow">Sistema de Indicadores</span>
+      <h2>Selecciona el tablero que deseas consultar</h2>
+      <p>Selecciona el rubro que deseas consultar. El acceso depende del usuario asignado.</p>
+      <div class="program-grid">
+        <button class="program-card active" data-program="salud"><strong>Salud</strong><span>Módulos Médicos + AlmaNova</span></button>
+        <button class="program-card" data-program="educacion"><strong>Educación</strong><span>Catálogo preparado · datos pendientes</span></button>
+        <button class="program-card" data-program="deporte"><strong>Deporte</strong><span>Unidades deportivas + comités</span></button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Header -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button id="menuBtn" class="icon-btn mobile-only" aria-label="Menú">
+        <svg viewBox="0 0 24 24" width="24" height="24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="logo-mini">
+        <img src="logo-icon.png?v=14.2" alt="BH" class="logo-mini-img"
+             onload="document.getElementById('miniSvgFallback').remove();"
+             onerror="this.remove();" />
+        <svg viewBox="0 0 100 100" width="36" height="36" id="miniSvgFallback">
+          <defs>
+            <linearGradient id="miniGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#A8E063"/>
+              <stop offset="100%" stop-color="#56AB2F"/>
+            </linearGradient>
+          </defs>
+          <path d="M50 15 C25 25, 15 50, 30 80 L50 90 L70 80 C85 50, 75 25, 50 15 Z" fill="url(#miniGrad)"/>
+        </svg>
+        <div>
+          <strong>Bienestar Humano</strong>
+          <small>Indicadores · Mérida</small>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button id="programBackBtn" class="btn-back-program hidden" type="button">Atrás</button>
+      <div class="period-select">
+        <label>Período</label>
+        <select id="periodSelect"></select>
+      </div>
+      <div class="user-pill" id="userPill">
+        <span class="user-pill-avatar" id="userAvatar">A</span>
+        <span id="userName">Usuario</span>
+        <button id="logoutBtn" class="logout-btn" title="Cerrar sesión">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navegación lateral -->
+  <aside class="sidebar" id="sidebar">
+    <nav>
+      <button class="nav-item active" data-view="overview">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        <span>Resumen</span>
+      </button>
+      <button class="nav-item" data-view="modules">
+        <svg viewBox="0 0 24 24" width="20" height="20"><rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/><rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/><rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/><rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        <span>Módulos</span>
+      </button>
+      <button class="nav-item" data-view="map">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        <span>Mapa</span>
+      </button>
+      <button class="nav-item" data-view="trends">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M23 6l-9.5 9.5-5-5L1 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 6h6v6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Tendencias</span>
+      </button>
+      <button class="nav-item" data-view="data">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Cargar datos</span>
+      </button>
+      <button class="nav-item" data-view="priority">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2L15 8l7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+        <span>Temas Prioritarios</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sync-status" id="syncStatus">
+        <span class="sync-dot"></span>
+        <small>Datos locales</small>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============== VISTA: RESUMEN ============== -->
+  <section class="view active" id="view-overview">
+    <div class="hero-banner">
+      <div class="hero-content">
+        <div class="hero-tag">PANEL EJECUTIVO</div>
+        <h1 class="hero-title">Indicadores de <span class="hl">Bienestar Humano</span></h1>
+        <p class="hero-sub" id="heroPeriod">Concentrado del período seleccionado</p>
+      </div>
+      <div class="hero-orb"></div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-primary" data-anim="0">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="kpi-label">Total de atenciones</div>
+        <div class="kpi-value" data-target="0" id="kpiTotal">0</div>
+        <div class="kpi-trend" id="kpiTotalTrend"></div>
+        <div class="kpi-spark"><canvas id="sparkTotal"></canvas></div>
+      </div>
+
+      <div class="kpi-card" data-anim="1">
+        <div class="kpi-icon kpi-icon-blue">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="kpi-label">Consultas Médicas</div>
+        <div class="kpi-value" data-target="0" id="kpiMedicos">0</div>
+        <div class="kpi-trend" id="kpiMedicosTrend"></div>
+      </div>
+
+      <div class="kpi-card" data-anim="2">
+        <div class="kpi-icon kpi-icon-green">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        </div>
+        <div class="kpi-label">Odontología</div>
+        <div class="kpi-value" data-target="0" id="kpiOdonto">0</div>
+        <div class="kpi-trend" id="kpiOdontoTrend"></div>
+      </div>
+
+      <div class="kpi-card" data-anim="3">
+        <div class="kpi-icon kpi-icon-orange">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        </div>
+        <div class="kpi-label">Enfermería</div>
+        <div class="kpi-value" data-target="0" id="kpiEnfermeria">0</div>
+        <div class="kpi-trend" id="kpiEnfermeriaTrend"></div>
+      </div>
+
+      <div class="kpi-card" data-anim="4">
+        <div class="kpi-icon kpi-icon-purple">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path d="M9 11H7a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h2zm6 0h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2zM5 11V8a7 7 0 0 1 14 0v3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="kpi-label">Rehabilitación</div>
+        <div class="kpi-value" data-target="0" id="kpiRehab">0</div>
+        <div class="kpi-trend" id="kpiRehabTrend"></div>
+      </div>
+
+      <div class="kpi-card" data-anim="5">
+        <div class="kpi-icon kpi-icon-pink">
+          <svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="kpi-label">Salud Mental</div>
+        <div class="kpi-value" data-target="0" id="kpiMental">0</div>
+        <div class="kpi-trend" id="kpiMentalTrend"></div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card chart-card-lg">
+        <div class="chart-head">
+          <h3>Distribución de servicios</h3>
+          <div class="chart-tabs">
+            <button class="chip active" data-chart-mode="bar">Barras</button>
+            <button class="chip" data-chart-mode="doughnut">Dona</button>
+          </div>
+        </div>
+        <div class="chart-body" data-chart="distChart"><canvas id="distChart"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-head"><h3>Top 10 módulos por atenciones</h3></div>
+        <div class="chart-body" data-chart="topChart"><canvas id="topChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card chart-card-lg">
+        <div class="chart-head"><h3>Atenciones por género</h3></div>
+        <div class="chart-body" data-chart="genderChart"><canvas id="genderChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head"><h3>Estatus de módulos</h3></div>
+        <div class="chart-body" data-chart="statusChart"><canvas id="statusChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== VISTA: MÓDULOS ============== -->
+  <section class="view" id="view-modules">
+    <div class="view-head">
+      <div>
+        <h2>Módulos médicos</h2>
+        <p class="muted">23 módulos de Salud y 5 unidades AlmaNova separadas</p>
+      </div>
+      <div class="view-tools">
+        <input type="search" id="moduleSearch" placeholder="Buscar módulo..." />
+        <select id="statusFilter">
+          <option value="all">Salud + AlmaNova</option>
+          <option value="ACTIVO">Solo activos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modules-grid" id="modulesGrid"></div>
+  </section>
+
+  <!-- ============== VISTA: MAPA ============== -->
+  <section class="view" id="view-map">
+    <div class="view-head">
+      <div>
+        <h2>Mapa de Salud</h2>
+        <p class="muted">Módulos médicos y AlmaNova</p>
+      </div>
+      <div class="map-legend">
+        <span class="lg lg-active"></span><small>Activo</small>
+        <span class="lg lg-reconv"></span><small>Reconvertido</small>
+        <span class="lg lg-closed"></span><small>Cerrado</small>
+      </div>
+    </div>
+    <div id="map"></div>
+    <div class="map-info" id="mapInfo">
+      <p class="muted">Selecciona un módulo en el mapa para ver detalles.</p>
+    </div>
+  </section>
+
+  <!-- ============== VISTA: TENDENCIAS ============== -->
+  <section class="view" id="view-trends">
+    <div class="view-head">
+      <div>
+        <h2>Tendencias históricas</h2>
+        <p class="muted">Evolución mensual de indicadores</p>
+      </div>
+    </div>
+    <div class="chart-card chart-card-full">
+      <div class="chart-head"><h3>Atenciones totales por mes</h3></div>
+      <div class="chart-body" data-chart="trendChart" style="height:340px"><canvas id="trendChart"></canvas></div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-head"><h3>Servicios de Salud</h3></div>
+        <div class="chart-body" data-chart="multiTrendChart" style="height:280px"><canvas id="multiTrendChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head"><h3>Crecimiento mensual (%)</h3></div>
+        <div class="chart-body" data-chart="growthChart" style="height:280px"><canvas id="growthChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== VISTA: CARGAR DATOS ============== -->
+  <section class="view" id="view-data">
+    <div class="view-head">
+      <div>
+        <h2>Carga mensual de datos</h2>
+        <p class="muted">Alimenta el sistema con la información del mes para mantenerlo al 100%</p>
+      </div>
+      <div class="view-tools">
+        <button id="exportBtn" class="btn-secondary">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Exportar JSON
+        </button>
+        <label for="importInput" class="btn-secondary">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Importar JSON
+        </label>
+        <input type="file" id="importInput" accept=".json" hidden />
+      </div>
+    </div>
+
+    <div class="data-load-card">
+      <div class="data-load-header">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Año</label>
+            <select id="loadYear"></select>
+          </div>
+          <div class="form-field">
+            <label>Mes</label>
+            <select id="loadMonth">
+              <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+              <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+              <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+              <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Cargado por</label>
+            <input type="text" id="loadAuthor" readonly />
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-track">
+        <div class="progress-step active" data-step="1"><span>1</span> Selecciona período</div>
+        <div class="progress-step" data-step="2"><span>2</span> Captura módulos</div>
+        <div class="progress-step" data-step="3"><span>3</span> Revisión</div>
+        <div class="progress-step" data-step="4"><span>4</span> Guardar</div>
+        <div class="progress-line"><div class="progress-line-fill" id="progressFill"></div></div>
+      </div>
+
+      <div class="data-table-wrap">
+        <table class="data-table" id="dataTable">
+          <thead>
+            <tr>
+              <th>Módulo</th>
+              <th>Médicos</th>
+              <th>Odontología</th>
+              <th>Enfermería</th>
+              <th>Rehabilitación</th>
+              <th>Salud Mental</th>
+              <th>Nutrición</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="data-actions">
+        <button id="saveDataBtn" class="btn-primary">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+          Guardar mes
+        </button>
+        <button id="clearDataBtn" class="btn-ghost">Limpiar formulario</button>
+      </div>
+    </div>
+
+    <div class="data-load-card">
+      <h3>Histórico cargado</h3>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </section>
+
+  <!-- ============== VISTA: TEMAS PRIORITARIOS ============== -->
+  <section class="view" id="view-priority">
+    <div class="view-head">
+      <div>
+        <h2>Temas Prioritarios</h2>
+        <p class="muted">Concentrado del 01 de septiembre 2024 al período actual</p>
+      </div>
+    </div>
+
+    <div class="priority-grid">
+      <div class="priority-card priority-salud">
+        <header><h3>Salud</h3><div class="pcicon">🩺</div></header>
+        <ul id="priSalud" class="priority-list"></ul>
+      </div>
+      <div class="priority-card priority-mujeres">
+        <header><h3>Mujeres</h3><div class="pcicon">💗</div></header>
+        <ul id="priMujeres" class="priority-list"></ul>
+      </div>
+      <div class="priority-card priority-mental">
+        <header><h3>Salud Mental · ALMA NOVA</h3><div class="pcicon">🧠</div></header>
+        <ul id="priMental" class="priority-list"></ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script src="data.js?v=14.2"></script>
+<script src="app.js?v=14.2"></script>
+</body>
+</html>
