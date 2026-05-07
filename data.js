@@ -9,7 +9,7 @@ const USERS = {
   crescencio_gutierrez:{ name: 'Cresencio Gutiérrez', password: 'CresencioBH2026', color:'#F59E0B', role:'admin', allowedPrograms:['educacion'] },
   ivan_herrera:       { name: 'Iván Herrera',       password: 'IvanBH2026',       color:'#8B5CF6', role:'admin', allowedPrograms:['deporte'] }
 };
-const APPS_SCRIPT_URL = '';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwqDq6v_wpk7V-0OQTOHJYXv7JFm1UF6EuQkuTw11gLaNvv_0DXYCXmppCWhVEz4Tgoqw/exec';
 
 /* KMZ/KML · Espacios físicos 2026
    El archivo compartido trae un NetworkLink de Google My Maps.
@@ -2973,139 +2973,141 @@ function generateMonthlyHistory(){
   return months;
 }
 const PRIORITY_DATA = {
-  "asOf": "31 de marzo de 2026",
+  "asOf": "30 de abril de 2026",
   "salud": [
     {
       "lbl": "Atenciones médicas totales",
-      "num": 52871
+      "num": 55235
     },
     {
       "lbl": "Consultas en módulos médicos",
-      "num": 42158
+      "num": 44083
     },
     {
       "lbl": "Consultas en módulos móviles",
-      "num": 4681
+      "num": 4826
     },
     {
       "lbl": "Médico a domicilio",
-      "num": 6032
+      "num": 6326
     },
     {
       "lbl": "Consultas de odontología",
-      "num": 21556
+      "num": 22744
     },
     {
       "lbl": "Rehabilitaciones",
-      "num": 32264
+      "num": 33835
     },
     {
       "lbl": "Detecciones y atenciones de enfermería",
-      "num": 175692
+      "num": 185097
     },
     {
       "lbl": "Odontología en unidades móviles",
-      "num": 5055
+      "num": 5356
     },
     {
       "lbl": "Rehabilitación en unidades móviles",
-      "num": 1504
+      "num": 1548
     },
     {
       "lbl": "Enfermería en unidades móviles",
-      "num": 73945
+      "num": 75150
     },
     {
       "lbl": "Ferias de salud",
-      "num": 422
+      "num": 424
     },
     {
       "lbl": "Colonias atendidas",
-      "num": 272
+      "num": 299
     },
     {
       "lbl": "Ferias en comisarías",
-      "num": 312
+      "num": 325
     }
   ],
+
   "mujeres": [
     {
       "lbl": "Consultas en módulos",
-      "num": 24497
+      "num": 25766
     },
     {
       "lbl": "Consultas en módulos móviles",
-      "num": 2987
+      "num": 2991
     },
     {
       "lbl": "Consultas de ginecología",
-      "num": 1138
+      "num": 1188
     },
     {
       "lbl": "Total de mastografías",
-      "num": 2668
+      "num": 3004
     },
     {
       "lbl": "CAMM",
-      "num": 1078
+      "num": 1083
     },
     {
       "lbl": "Mastógrafo móvil",
-      "num": 1909
+      "num": 1921
     },
     {
       "lbl": "DOCMA / exploración mamaria",
-      "num": 2605
+      "num": 2617
     },
     {
       "lbl": "DOCMA + Mastografías",
-      "num": 5348
+      "num": 5621
     },
     {
       "lbl": "Total de ultrasonidos",
-      "num": 891
+      "num": 1162
     },
     {
       "lbl": "Ultrasonidos en CAMM",
-      "num": 843
+      "num": 884
     },
     {
       "lbl": "Ultrasonidos en mastógrafo móvil",
-      "num": 266
+      "num": 278
     },
     {
       "lbl": "Odontológicas en módulos",
-      "num": 12340
+      "num": 13022
     },
     {
       "lbl": "Odontológicas en módulos móviles",
-      "num": 3051
+      "num": 3165
     },
     {
       "lbl": "Rehabilitación",
-      "num": 20034
+      "num": 21180
     },
     {
       "lbl": "Rehabilitación móvil",
-      "num": 1116
+      "num": 1148
     },
     {
       "lbl": "Detecciones y atenciones enfermería",
-      "num": 118352
+      "num": 124821
     },
     {
       "lbl": "Enfermería en unidades móviles",
-      "num": 40426
+      "num": 42940
     }
   ],
+
   "mental": [
     {
       "lbl": "Personas atendidas en ALMA NOVA",
-      "num": 13944
+      "num": 14758
     },
     {
       "lbl": "Consultas psicológicas",
-      "num": 25234
+      "num": 25560
     },
     {
       "lbl": "Beneficiarios en prevención",
@@ -3113,7 +3115,7 @@ const PRIORITY_DATA = {
     },
     {
       "lbl": "Canalizaciones realizadas",
-      "num": 241
+      "num": 272
     },
     {
       "lbl": "Personas atendidas en brigadas",
