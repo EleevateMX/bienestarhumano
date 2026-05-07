@@ -9,7 +9,7 @@ const USERS = {
   crescencio_gutierrez:{ name: 'Cresencio Gutiérrez', password: 'CresencioBH2026', color:'#F59E0B', role:'admin', allowedPrograms:['educacion'] },
   ivan_herrera:       { name: 'Iván Herrera',       password: 'IvanBH2026',       color:'#8B5CF6', role:'admin', allowedPrograms:['deporte'] }
 };
-const APPS_SCRIPT_URL = '';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwqDq6v_wpk7V-0OQTOHJYXv7JFm1UF6EuQkuTw11gLaNvv_0DXYCXmppCWhVEz4Tgoqw/exec';
 
 /* KMZ/KML · Espacios físicos 2026
    El archivo compartido trae un NetworkLink de Google My Maps.
