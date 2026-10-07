@@ -1,25 +1,3 @@
-# Sistema de Indicadores V8 · Dirección de Bienestar Humano
-
-Incluye Salud, Educación y Deporte, con restricciones de acceso por usuario.
-
-
-
-## ✅ Actualización V4 estable
-
-- Se eliminaron módulos reconvertidos y cerrados.
-- La base queda organizada con **23 módulos de Salud** y **5 unidades AlmaNova**: Norte, Oriente, Sur, Pensiones y Caucel.
-- AlmaNova queda separado visualmente de los módulos médicos.
-- Se agregó selector inicial de tablero: **Salud / Educación / Deporte**. Por ahora Salud queda activo; Educación y Deporte están listos para integrarse cuando se reciban sus indicadores.
-- Se agregó `mobile.html` para teléfonos. `index.html` redirige automáticamente a `mobile.html` en iPhone/Android.
-- Las gráficas y tendencias se renderizan de forma nativa, sin depender de Chart.js.
-- Al hacer click en cualquier módulo se abre una ventana de tendencias mensuales del módulo y servicio más usado.
-
-### Archivos nuevos o importantes
-
-- `index.html`: versión escritorio, redirige a móvil cuando detecta teléfono.
-- `mobile.html`: versión especial para teléfono con navegación inferior.
-- `data.js`: base depurada con 23 módulos + 5 AlmaNova.
-- `app.js`: motor V4 estable con gráficas nativas y detalle por módulo.
 # 🌿 Sistema de Indicadores · Dirección de Bienestar Humano
 ### H. Ayuntamiento de Mérida 2024–2027
 
@@ -37,8 +15,9 @@ Dashboard interactivo, animado y responsivo para visualizar la productividad de 
 - 📝 **Captura mensual** con barra de progreso para mantener la información al 100%
 - 🌐 **Persistencia local** (LocalStorage) + opción de **sincronización a Google Sheets** vía Apps Script
 - 📥 **Exportar / Importar JSON** de respaldo
-- ⭐ **Temas Prioritarios** (Salud, Mujeres, Salud Mental) ya cargados con datos al 30 de abril de 2026
-- 🎨 **Identidad visual** del Ayuntamiento de Mérida (verde lima `#8DC63F` + azul marino `#0E2A6B`)
+- ⭐ **Temas Prioritarios** (Salud, Mujeres, Salud Mental) ya cargados con datos al 31 de marzo de 2026
+- 📅 **21 períodos mensuales reales** precargados (enero 2025 → septiembre 2026) extraídos del Excel oficial `MODULOS2025`
+- 🎨 **Identidad gráfica oficial** del Manual del Gobierno Municipal de Mérida 2024-2027 (azul `#002C72`, verde `#9DEF0F`/`#74BA47`, tipografía Poppins, lema _"Mérida, contigo es mejor"_)
 - ✨ **Animaciones**: partículas de fondo, splash, transiciones, gráficas animadas
 - 📱 **100% Responsive**: optimizado para teléfono, tablet y escritorio
 
@@ -46,15 +25,8 @@ Dashboard interactivo, animado y responsivo para visualizar la productividad de 
 
 ## 🔑 Usuarios y contraseñas iniciales
 
-| Usuaria/o  | Contraseña |
-|------------|------------|
-| Alejandra Mejía | `AlejandraBH2026` |
-| Jesús Pérez | `JesusBH2026` |
-| Alfonso Ávila | `AlfonsoBH2026` |
-| Cresencio Gutiérrez | `CresencioBH2026` |
-| Iván Herrera | `IvanBH2026` |
-
-------------|-----------------|
+| Usuaria/o  | Contraseña      |
+|------------|-----------------|
 | Alejandra  | `Alejandra2026` |
 | Chucho     | `Chucho2026`    |
 | Sandra     | `Sandra2026`    |
@@ -221,63 +193,8 @@ Esto permite que **los datos cargados se guarden en una hoja de Google Sheets** 
 
 Desarrollado para la **Dirección de Bienestar Humano · H. Ayuntamiento de Mérida 2024–2027**.
 
-Datos del concentrado al 30 de abril de 2026.
-
-## V14 · Ajustes recientes
-
-- En Salud, la gráfica dejó de mostrar solo Top 10 y ahora muestra todas las sedes para tener visibilidad completa.
-- El botón “Editar información” ahora permite modificar textos visibles y métricas/valores por servicio en Salud.
-- En Educación se pueden editar servicios como Inglés, Bibliotecas/Ludotecas, Educación artística y Acompañamiento académico.
-- En Deporte se pueden editar administrador/responsable, tipo/categoría y actividades/horarios.
-- Se armonizó la visual de Deporte para evitar marcadores/círculos azules fuera de la paleta del rubro.
-- Caché actualizado a `v=13.0`.
+Datos del concentrado al 31 de marzo de 2026.
 
 ---
 
 > _Mérida Contigo es Mejor_ 🌿
-
-
-## V7 · Ajustes incorporados
-
-- Catálogo de 23 módulos activos de Salud y 5 AlmaNova, sin módulos cerrados ni reconvertidos.
-- Cada módulo médico incluye servicios reales disponibles y horario base según el archivo de módulos activos de abril 2026.
-- AlmaNova se maneja únicamente como atenciones de salud mental / total de atenciones, con nomenclatura AN en mapa.
-- Catálogo inicial de Educación cargado: acompañamiento académico, educación artística, ludotecas/bibliotecas e inglés.
-- Indicador inicial de Inglés septiembre 2024: 7 sedes, 1,350 alumnos inscritos.
-- Gráficas nativas multicolor corregidas para PC y móvil.
-
-
-## V9 · Segmentos ad hoc
-- Salud muestra únicamente módulos médicos, AlmaNova y temas prioritarios de salud.
-- Educación usa Bibliotecas y talleres, con categorías de acompañamiento académico, educación artística, ludotecas/bibliotecas e inglés.
-- Deporte usa Sedes Deportivas y Canchas, con unidades, comités, administradores y disciplinas.
-- Acceso restringido por usuario según rubro autorizado.
-
-
-## V12 · Educación con mapa por sede
-
-- El mapa de Educación usa las sedes y direcciones de la columna A del archivo de Bibliotecas y Talleres.
-- Cada marcador muestra sede, dirección, zona y servicios disponibles.
-- Los cards de Educación incluyen dirección y horarios por categoría.
-
-
-## V12 · KMZ y navegación por rubros
-
-- Se agregó lectura de `espacios-fisicos-2026.kml` / NetworkLink de Google My Maps para ubicar sedes de Salud, Educación y Deporte con mayor precisión.
-- La app ignora registros relacionados con “Espacios municipales en rehabilitación”.
-- Alejandra Mejía y Jesús Pérez tienen botón **Atrás** para regresar al selector de rubro.
-- Usuarios con acceso a un solo rubro no ven el botón Atrás.
-
-
-## V12 · Gestión editable y puntos manuales
-
-- Los cards permiten editar nombres e información visible sin modificar coordenadas.
-- El mapa permite agregar puntos manuales por rubro: Salud, Educación o Deporte.
-- Educación diferencia sedes de Inglés y Bibliotecas/Ludotecas; los talleres se muestran como servicios de cada sede.
-- Se añadieron íconos SVG genéricos para reforzar la lectura visual sin depender de imágenes externas.
-
-
-## V14 Data Fix
-- Se corrigió el acumulado de Salud para usar el concentrado global completo enero-abril 2026, sin perder la vista por sedes activas.
-- Los cards y mapas siguen mostrando 23 módulos de Salud + 5 AlmaNova, pero los KPI generales incluyen programas globales de salud no ligados a una sede visible.
-- Se actualizó la llave local para evitar datos viejos en caché.

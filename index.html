@@ -4,34 +4,22 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="theme-color" content="#0E2A6B" />
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
 <title>Bienestar Humano · Indicadores · Ayuntamiento de Mérida</title>
-<script>
-  (function(){
-    var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth <= 760;
-    var wantsDesktop = location.search.indexOf('desktop=1') !== -1;
-    if(isMobile && !wantsDesktop && !/mobile\.html$/i.test(location.pathname)){
-      location.replace('mobile.html?v=14.2');
-    }
-  })();
-</script>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<link rel="stylesheet" href="styles.css?v=14.2" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
 <!-- ===================== PANTALLA DE CARGA ===================== -->
 <div id="splash" class="splash">
   <div class="splash-logo">
-    <img src="logo-white.png?v=14.2" alt="Bienestar Humano" class="splash-img"
-         onload="document.getElementById('splashSvgFallback')?.remove();"
+    <img src="logo.png" alt="Bienestar Humano" class="splash-img"
+         onload="document.getElementById('splashSvgFallback').remove();"
          onerror="this.remove();" />
     <svg viewBox="0 0 100 100" class="splash-svg" id="splashSvgFallback">
       <defs>
@@ -61,8 +49,8 @@
 
   <div class="login-card">
     <div class="login-brand">
-      <img src="logo.png?v=14.2" alt="Dirección de Bienestar Humano" class="login-logo"
-           onload="document.getElementById('loginSvgFallback')?.remove();"
+      <img src="logo.png" alt="Dirección de Bienestar Humano" class="login-logo"
+           onload="document.getElementById('loginSvgFallback').remove();"
            onerror="this.remove();" />
       <div id="loginSvgFallback" class="login-fallback">
         <svg viewBox="0 0 100 100" class="brand-mark">
@@ -81,29 +69,25 @@
       </div>
     </div>
 
-    <p class="login-welcome">Sistema de Indicadores · Salud, Educación y Deporte</p>
+    <p class="login-welcome">Sistema de Indicadores · Módulos Médicos</p>
 
     <form id="loginForm" class="login-form">
-      <div class="user-grid user-grid-compact">
-        <button type="button" class="user-chip" data-user="alejandra_mejia">
+      <div class="user-grid">
+        <button type="button" class="user-chip" data-user="alejandra">
           <span class="user-avatar" style="background:linear-gradient(135deg,#A8E063,#56AB2F)">A</span>
-          <span>Alejandra Mejía</span>
+          <span>Alejandra</span>
         </button>
-        <button type="button" class="user-chip" data-user="jesus_perez">
-          <span class="user-avatar" style="background:linear-gradient(135deg,#0E2A6B,#1E50C5)">J</span>
-          <span>Jesús Pérez</span>
+        <button type="button" class="user-chip" data-user="chucho">
+          <span class="user-avatar" style="background:linear-gradient(135deg,#0E2A6B,#1E50C5)">C</span>
+          <span>Chucho</span>
         </button>
-        <button type="button" class="user-chip" data-user="alfonso_avila">
-          <span class="user-avatar" style="background:linear-gradient(135deg,#1E50C5,#0E2A6B)">A</span>
-          <span>Alfonso Ávila</span>
+        <button type="button" class="user-chip" data-user="sandra">
+          <span class="user-avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706)">S</span>
+          <span>Sandra</span>
         </button>
-        <button type="button" class="user-chip" data-user="crescencio_gutierrez">
-          <span class="user-avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706)">C</span>
-          <span>Cresencio Gutiérrez</span>
-        </button>
-        <button type="button" class="user-chip user-chip-wide" data-user="ivan_herrera">
-          <span class="user-avatar" style="background:linear-gradient(135deg,#8B5CF6,#0E2A6B)">I</span>
-          <span>Iván Herrera</span>
+        <button type="button" class="user-chip" data-user="clarisa">
+          <span class="user-avatar" style="background:linear-gradient(135deg,#EC4899,#BE185D)">C</span>
+          <span>Clarisa</span>
         </button>
       </div>
 
@@ -121,29 +105,14 @@
     </form>
 
     <div class="login-footer">
-      <small>© 2024-2027 · H. Ayuntamiento de Mérida</small>
+      <small>Mérida, contigo es mejor</small>
+      <small style="display:block;margin-top:.2rem;opacity:.75">© 2024-2027 · H. Ayuntamiento de Mérida</small>
     </div>
   </div>
 </section>
 
 <!-- ===================== APP PRINCIPAL ===================== -->
 <main id="app" class="app hidden">
-
-  <!-- Selector inicial de tablero -->
-  <section id="programGate" class="program-gate hidden">
-    <div class="program-panel">
-      <div class="program-brand"><img src="logo.png?v=14.2" alt="Bienestar Humano"></div>
-      <span class="program-eyebrow">Sistema de Indicadores</span>
-      <h2>Selecciona el tablero que deseas consultar</h2>
-      <p>Selecciona el rubro que deseas consultar. El acceso depende del usuario asignado.</p>
-      <div class="program-grid">
-        <button class="program-card active" data-program="salud"><strong>Salud</strong><span>Módulos Médicos + AlmaNova</span></button>
-        <button class="program-card" data-program="educacion"><strong>Educación</strong><span>Catálogo preparado · datos pendientes</span></button>
-        <button class="program-card" data-program="deporte"><strong>Deporte</strong><span>Unidades deportivas + comités</span></button>
-      </div>
-    </div>
-  </section>
-
 
   <!-- Header -->
   <header class="topbar">
@@ -152,7 +121,7 @@
         <svg viewBox="0 0 24 24" width="24" height="24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
       <div class="logo-mini">
-        <img src="logo-icon.png?v=14.2" alt="BH" class="logo-mini-img"
+        <img src="logo.png" alt="BH" class="logo-mini-img"
              onload="document.getElementById('miniSvgFallback').remove();"
              onerror="this.remove();" />
         <svg viewBox="0 0 100 100" width="36" height="36" id="miniSvgFallback">
@@ -171,7 +140,6 @@
       </div>
     </div>
     <div class="topbar-right">
-      <button id="programBackBtn" class="btn-back-program hidden" type="button">Atrás</button>
       <div class="period-select">
         <label>Período</label>
         <select id="periodSelect"></select>
@@ -299,23 +267,23 @@
             <button class="chip" data-chart-mode="doughnut">Dona</button>
           </div>
         </div>
-        <div class="chart-body" data-chart="distChart"><canvas id="distChart"></canvas></div>
+        <div class="chart-body"><canvas id="distChart"></canvas></div>
       </div>
 
       <div class="chart-card">
         <div class="chart-head"><h3>Top 10 módulos por atenciones</h3></div>
-        <div class="chart-body" data-chart="topChart"><canvas id="topChart"></canvas></div>
+        <div class="chart-body"><canvas id="topChart"></canvas></div>
       </div>
     </div>
 
     <div class="charts-row">
       <div class="chart-card chart-card-lg">
         <div class="chart-head"><h3>Atenciones por género</h3></div>
-        <div class="chart-body" data-chart="genderChart"><canvas id="genderChart"></canvas></div>
+        <div class="chart-body"><canvas id="genderChart"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-head"><h3>Estatus de módulos</h3></div>
-        <div class="chart-body" data-chart="statusChart"><canvas id="statusChart"></canvas></div>
+        <div class="chart-body"><canvas id="statusChart"></canvas></div>
       </div>
     </div>
   </section>
@@ -325,13 +293,15 @@
     <div class="view-head">
       <div>
         <h2>Módulos médicos</h2>
-        <p class="muted">23 módulos de Salud y 5 unidades AlmaNova separadas</p>
+        <p class="muted">Detalle de productividad por módulo</p>
       </div>
       <div class="view-tools">
         <input type="search" id="moduleSearch" placeholder="Buscar módulo..." />
         <select id="statusFilter">
-          <option value="all">Salud + AlmaNova</option>
-          <option value="ACTIVO">Solo activos</option>
+          <option value="all">Todos los estatus</option>
+          <option value="ACTIVO">Activos</option>
+          <option value="RECONV">Reconvertidos</option>
+          <option value="CERRADO">Cerrados</option>
         </select>
       </div>
     </div>
@@ -343,8 +313,8 @@
   <section class="view" id="view-map">
     <div class="view-head">
       <div>
-        <h2>Mapa de Salud</h2>
-        <p class="muted">Módulos médicos y AlmaNova</p>
+        <h2>Mapa de módulos</h2>
+        <p class="muted">Ubicación geográfica e indicadores por colonia</p>
       </div>
       <div class="map-legend">
         <span class="lg lg-active"></span><small>Activo</small>
@@ -368,16 +338,16 @@
     </div>
     <div class="chart-card chart-card-full">
       <div class="chart-head"><h3>Atenciones totales por mes</h3></div>
-      <div class="chart-body" data-chart="trendChart" style="height:340px"><canvas id="trendChart"></canvas></div>
+      <div class="chart-body" style="height:340px"><canvas id="trendChart"></canvas></div>
     </div>
     <div class="charts-row">
       <div class="chart-card">
-        <div class="chart-head"><h3>Servicios de Salud</h3></div>
-        <div class="chart-body" data-chart="multiTrendChart" style="height:280px"><canvas id="multiTrendChart"></canvas></div>
+        <div class="chart-head"><h3>Médicos vs Odontología vs Enfermería</h3></div>
+        <div class="chart-body" style="height:280px"><canvas id="multiTrendChart"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-head"><h3>Crecimiento mensual (%)</h3></div>
-        <div class="chart-body" data-chart="growthChart" style="height:280px"><canvas id="growthChart"></canvas></div>
+        <div class="chart-body" style="height:280px"><canvas id="growthChart"></canvas></div>
       </div>
     </div>
   </section>
@@ -496,7 +466,7 @@
 <!-- Toast -->
 <div id="toast" class="toast"></div>
 
-<script src="data.js?v=14.2"></script>
-<script src="app.js?v=14.2"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
