@@ -44,6 +44,7 @@ bienestar-humano/
 ├── styles.css               → Estilos e identidad visual
 ├── data.js                  → Usuarios, módulos, datos iniciales
 ├── app.js                   → Lógica principal (login, charts, mapa, carga)
+├── vendor/                  → Chart.js y Leaflet incluidos (sin CDN)
 ├── google-apps-script.gs    → Motor de datos en la nube (opcional)
 ├── logo.png                 → Logo completo (Dirección de Bienestar Humano)
 ├── logo-icon.png            → Logo solo ícono (para topbar y splash)
@@ -185,7 +186,7 @@ Esto permite que **los datos cargados se guarden en una hoja de Google Sheets** 
 - **El mapa no carga**: revisa tu conexión a internet (usa Leaflet desde CDN). El mapa **no necesita API key**: usa OpenStreetMap y, si esa capa falla, cambia solo a CARTO. Con el ícono de capas puedes pasar a vista satelital (Esri).
 - **No se ve "Espacios físicos 2026"**: ese mapa vive en Google My Maps; debe estar compartido como _"Cualquier persona con el enlace"_. El id del mapa está en `data.js` → `MAP_CONFIG.myMapsId`.
 - **Actualicé el Excel y no veo los datos nuevos**: sube `DATA_VERSION` en `data.js` (p. ej. de 2 a 3). Al abrir la app, cada navegador reemplaza los meses oficiales guardados y conserva los capturados a mano.
-- **Las gráficas se ven en blanco**: actualiza la página (F5). Si persiste, revisa la conexión a internet: la librería de gráficas se carga desde un CDN público.
+- **Las gráficas se ven en blanco**: actualiza la página (Ctrl+Shift+R). Desde la versión 4 las librerías de gráficas y mapa viven en la carpeta `vendor/` del repositorio, así que ya no las puede bloquear un bloqueador de anuncios ni dependen de un CDN.
 - **El logo no aparece**: verifica que subiste `logo.png` y `logo-icon.png` a GitHub junto con los demás archivos. El sistema usa un fallback SVG si los PNG no se encuentran.
 - **Quiero recuperar datos borrados**: usa el JSON exportado más reciente con _"Importar"_.
 - **Apps Script da error de CORS**: re-publica con _"Quién tiene acceso: Cualquier usuario"_.
