@@ -100,3 +100,35 @@ for p in out:
         if xs!=p['summary'] or p['xl_total']['total']!=tot: flag=f'  !! EXCEL dice {p["xl_total"]}'
     print(p['period'], p['sheet'], 'n_mod', len(p['modules']), 'sum', p['summary'], 'TOTAL', tot, 'gen', p['gender'], 'unk', p['unknown'], flag)
 print('WARN', warnings)
+
+# ---------------------------------------------------------------------------
+# Hoja "SEPT-DIC2024": acumulado de 4 meses por módulo (columnas corridas +2:
+# nombre en C, estatus en D, servicios desde E). Se guarda como período
+# 2024-12 con span=4 para que entre en los totales sin graficarse por mes.
+# ---------------------------------------------------------------------------
+def parse_2024(wb):
+    if 'SEPT-DIC2024' not in wb.sheetnames: return None
+    ws = wb['SEPT-DIC2024']
+    COLS24 = {'medicos':(5,6,7),'odonto':(8,9,10),'enfermeria':(11,12,13),'rehab':(14,15,16),'mental':(18,19,20),'nutri':(21,22,23)}
+    modules={}; gender={'h':0,'m':0}
+    for r in range(3, 80):
+        raw = ws.cell(r,3).value or ws.cell(r,2).value
+        if raw is None:
+            if ws.cell(r,26).value is not None: break
+            continue
+        mid = to_id(str(raw).strip())
+        if not mid: continue
+        m={}
+        for k,(h,mm,t) in COLS24.items():
+            tv=num(ws.cell(r,t).value); hv,mv=num(ws.cell(r,h).value),num(ws.cell(r,mm).value)
+            if tv==0 and (hv or mv): tv=hv+mv
+            m[k]=tv; gender['h']+=hv; gender['m']+=mv
+        modules[mid]=m
+    summary={k:sum(m[k] for m in modules.values()) for k in COLS24}
+    return {'period':'2024-12','span':4,'label':'Sept – Dic 2024 (acumulado)','summary':summary,'gender':gender,'modules':modules}
+
+if __name__ == '__main__' and len(sys.argv) > 3:
+    p24 = parse_2024(wb)
+    if p24:
+        json.dump(p24, open(sys.argv[3],'w'), ensure_ascii=False, indent=1)
+        print('2024:', p24['summary'], 'TOTAL', sum(p24['summary'].values()), 'gen', p24['gender'], 'mods', len(p24['modules']))

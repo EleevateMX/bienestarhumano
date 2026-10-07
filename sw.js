@@ -2,7 +2,7 @@
    - Red primero, caché de respaldo: siempre intenta traer la versión nueva
      de GitHub Pages; si no hay internet, sirve la última copia guardada.
    - Sube CACHE_VERSION cuando quieras forzar que se limpie la caché vieja. */
-const CACHE_VERSION = 'bh-v5';
+const CACHE_VERSION = 'bh-v6';
 const SHELL = [
   './', './index.html', './styles.css', './app.js', './data.js',
   './vendor/chart.umd.js', './vendor/leaflet/leaflet.js', './vendor/leaflet/leaflet.css', './vendor/xlsx.mini.min.js',

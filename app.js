@@ -346,7 +346,8 @@ function initNav(){
 /* ---------- PERÍODOS ACUMULADOS (todo el histórico / por año) ---------- */
 const isPartialPeriod = (p) => !!p.partial || /parcial/i.test(p.label || '');
 const MES_CORTO = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-const periodMonthLabel = (p) => { const [y,m] = p.period.split('-'); return `${MES_CORTO[+m-1]} ${y}`; };
+const periodMonthLabel = (p, useStart) => { const [y,m] = ((useStart && p.spanFrom) || p.period).split('-'); return `${MES_CORTO[+m-1]} ${y}`; };
+const periodMonths = (p) => p.span || 1;   // un acumulado (p. ej. sept–dic 2024) vale varios meses
 
 function aggregatePeriods(list, key, label){
   const modules = {}, gender = { h:0, m:0 };
@@ -361,9 +362,9 @@ function aggregatePeriods(list, key, label){
   list.forEach(p => { const sp = p.summary || aggregateModuleSummary(p.modules); Object.keys(summary).forEach(k => summary[k] += sp[k] || 0); });
   const first = list[0], last = list[list.length-1];
   return {
-    period: key, virtual: true, months: list.length, list,
+    period: key, virtual: true, months: list.reduce((a,p) => a + periodMonths(p), 0), list,
     label: label || key,
-    range: list.length ? `${periodMonthLabel(first)} → ${periodMonthLabel(last)}` : '',
+    range: list.length ? `${periodMonthLabel(first, true)} → ${periodMonthLabel(last)}` : '',
     summary, gender: (gender.h + gender.m) ? gender : null, modules
   };
 }
@@ -380,7 +381,7 @@ function aggregateOptions(){
   years.forEach(y => {
     const list = complete.filter(p => p.period.startsWith(y));
     const agg = aggregatePeriods(list, 'y' + y);
-    agg.label = list.length === 12 ? `Año ${y} (completo)` : `Año ${y} (${agg.range})`;
+    agg.label = agg.months === 12 ? `Año ${y} (completo)` : `Año ${y} (${agg.range})`;
     opts.push(agg);
   });
   return opts;
@@ -479,6 +480,7 @@ function renderOverview(){
   let prev = null, trendSuffix = 'vs mes anterior';
   if(!cur.virtual){
     prev = STATE.periods[STATE.currentPeriodIdx-1];
+    if(cur.span || (prev && prev.span)) prev = null;   // un acumulado de varios meses no se compara con un mes
   } else if(cur.period.startsWith('y')){
     const y = +cur.period.slice(1);
     const months = new Set(cur.list.map(p => p.period.slice(5)));
@@ -516,9 +518,10 @@ function renderOverview(){
     setTrend($('#kpiMentalTrend'), s.mental, sp.mental, trendSuffix);
     setTrend($('#kpiNutriTrend'), s.nutri, sp.nutri, trendSuffix);
   } else {
-    const txt = cur.virtual ? `Acumulado de ${cur.months} meses` : 'Primer mes registrado';
+    const txt = cur.virtual ? `Acumulado de ${cur.months} meses` : cur.span ? `Acumulado de ${cur.span} meses` : 'Primer mes registrado';
+    const nMeses = cur.virtual ? cur.months : (cur.span || 0);
     ['Total','Medicos','Odonto','Enfermeria','Rehab','Mental','Nutri'].forEach(k => {
-      const el = $(`#kpi${k}Trend`); if(el){ el.className = 'kpi-trend flat'; el.textContent = (cur.virtual && k !== 'Total') ? `promedio ${fmt(Math.round((s[k.toLowerCase()] || 0) / cur.months))} al mes` : txt; }
+      const el = $(`#kpi${k}Trend`); if(el){ el.className = 'kpi-trend flat'; el.textContent = (nMeses > 1 && k !== 'Total') ? `promedio ${fmt(Math.round((s[k.toLowerCase()] || 0) / nMeses))} al mes` : txt; }
     });
   }
 
@@ -559,19 +562,19 @@ function renderHeroFacts(cur, s, total){
 /* Lista accionable: módulos activos que no reportaron nada en el mes */
 function renderIdleModules(cur){
   const ul = $('#idleList'); if(!ul) return;
-  const t = $('#idleTitle'); if(t) t.textContent = cur.virtual ? 'Módulos activos sin registros en el período' : 'Módulos activos sin registros este mes';
+  const t = $('#idleTitle'); if(t) t.textContent = (cur.virtual || cur.span) ? 'Módulos activos sin registros en el período' : 'Módulos activos sin registros este mes';
   const idle = MODULES.filter(m => m.status === 'ACTIVO' && moduleTotal(cur.modules && cur.modules[m.id]) === 0);
   $('#idleCount').textContent = idle.length ? String(idle.length) : '';
   ul.innerHTML = idle.length
     ? idle.map(m => `<li><span class="idle-name">${m.name}</span><span class="idle-colony">${m.colony || ''}</span></li>`).join('')
-    : `<li class="idle-empty">Todos los módulos activos reportaron atenciones ${cur.virtual ? 'en el período' : 'este mes'}.</li>`;
+    : `<li class="idle-empty">Todos los módulos activos reportaron atenciones ${(cur.virtual || cur.span) ? 'en el período' : 'este mes'}.</li>`;
 }
 
 function renderSparkline(){
   if(typeof Chart === 'undefined') return;
   // Pequeño sparkline en el KPI principal: últimos 8 meses, o todo el tramo si es un acumulado
   const cur = currentPeriod();
-  const last = cur.virtual ? cur.list : STATE.periods.slice(Math.max(0, STATE.currentPeriodIdx - 7), STATE.currentPeriodIdx + 1);
+  const last = (cur.virtual ? cur.list : STATE.periods.slice(Math.max(0, STATE.currentPeriodIdx - 7), STATE.currentPeriodIdx + 1)).filter(p => !p.span);
   const cap = $('#sparkCap');
   if(cap) cap.textContent = cur.virtual ? `Mes a mes (${cur.range})` : 'Tendencia de los últimos 8 meses';
   const data = last.map(p => {
@@ -980,7 +983,7 @@ if(typeof Chart !== 'undefined') Chart.register(valueLabelsPlugin);
 
 function trendRows(){
   // Meses ordenados; excluye el mes parcial salvo que la usuaria lo pida.
-  let rows = STATE.periods.slice().sort((a,b) => a.period.localeCompare(b.period));
+  let rows = STATE.periods.filter(p => !p.span).sort((a,b) => a.period.localeCompare(b.period));
   if(!TREND.includePartial) rows = rows.filter(p => !isPartial(p));
   if(TREND.range !== 'all') rows = rows.slice(-Number(TREND.range));
   return rows;
@@ -1091,7 +1094,9 @@ function renderTrends(){
   // Subtítulos
   const first = rows[0], lastRow = rows[rows.length-1];
   const rangeTxt = rows.length ? `${longLabel(first)} → ${longLabel(lastRow)}` : '';
-  $('#trendsSub').textContent = rows.length ? `${rangeTxt} · ${rows.length} meses` : 'Sin datos';
+  const spans = STATE.periods.filter(p => p.span && !isPartial(p));
+  const spanNote = (TREND.range === 'all' && spans.length) ? ` · Además, ${spans.map(p => `${p.label.replace(/ \(.*\)$/, '')}: ${fmt(SUM_TOTAL(periodSummary(p)))} atenciones (acumulado, no se grafica por mes)`).join('; ')}` : '';
+  $('#trendsSub').textContent = rows.length ? `${rangeTxt} · ${rows.length} meses${spanNote}` : 'Sin datos';
   $('#trendMainTitle').textContent = `${METRIC_LABEL[k]} por mes`;
   $('#trendMainSub').textContent = rangeTxt;
 
@@ -1144,7 +1149,7 @@ function renderTrends(){
   });
 
   // ----- Año contra año (ene–dic, una serie por año) -----
-  const years = [...new Set(STATE.periods.map(p => p.period.slice(0,4)))].sort();
+  const years = [...new Set(STATE.periods.filter(p => !p.span).map(p => p.period.slice(0,4)))].sort();
   const yoyYears = years.slice(-2);
   const yearColors = { [yoyYears[yoyYears.length-1]]: color };
   if(yoyYears.length > 1) yearColors[yoyYears[0]] = '#CBD5E1';
@@ -1569,10 +1574,11 @@ function refreshAll(){
 function renderAlerts(cur, prev){
   const ul = $('#alertList'), count = $('#alertCount'); if(!ul) return;
   const alerts = [];
-  if(cur.virtual){
+  if(cur.virtual || cur.span){
     ul.innerHTML = '<li class="alert-ok">Las alertas se calculan mes a mes. Elige un mes en el selector de período.</li>';
     count.textContent = ''; return;
   }
+  if(prev && prev.span) prev = null;
   const s = periodSummary(cur);
   if(prev){
     const sp = periodSummary(prev);
@@ -1632,24 +1638,25 @@ function openModuleModal(id){
   const statusTxt = { ACTIVO:'Activo', RECONV:'Reconvertido', CERRADO:'Cerrado' }[mod.status] || mod.status;
   $('#mmSub').textContent = `${mod.colony || ''} · ${statusTxt}${mod.src === 'kmz' ? ' · ubicación del KMZ oficial' : ''}`;
 
-  const rows = STATE.periods.filter(p => !isPartialPeriod(p)).sort((a,b) => a.period.localeCompare(b.period));
+  const allRows = STATE.periods.filter(p => !isPartialPeriod(p)).sort((a,b) => a.period.localeCompare(b.period));
+  const rows = allRows.filter(p => !p.span);
   const vals = rows.map(p => moduleTotal(p.modules && p.modules[id]));
-  const withData = vals.filter(v => v > 0);
-  const total = sum(vals);
+  const withData = allRows.filter(p => moduleTotal(p.modules && p.modules[id]) > 0).reduce((a,p) => a + periodMonths(p), 0);
+  const total = allRows.reduce((a,p) => a + moduleTotal(p.modules && p.modules[id]), 0);
   let bestIdx = -1; vals.forEach((v,i) => { if(bestIdx < 0 || v > vals[bestIdx]) bestIdx = i; });
   const last = rows[rows.length-1], prev = rows[rows.length-2];
   const lastV = vals[vals.length-1], prevV = vals[vals.length-2];
   const d = prev ? pct(lastV, prevV) : null;
   const mix = { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 };
-  rows.forEach(p => { const m = (p.modules && p.modules[id]) || {}; Object.keys(mix).forEach(k => mix[k] += m[k] || 0); });
+  allRows.forEach(p => { const m = (p.modules && p.modules[id]) || {}; Object.keys(mix).forEach(k => mix[k] += m[k] || 0); });
   const topSvc = SERVICE_DEFS.slice().sort((a,b) => mix[b.key] - mix[a.key])[0];
   $('#mmStats').innerHTML = [
-    { lbl:'Acumulado', val: fmt(total), cap:`${withData.length} meses con registros` },
-    { lbl:'Promedio mensual', val: fmt(withData.length ? Math.round(total / withData.length) : 0), cap:'en meses con registros' },
+    { lbl:'Acumulado', val: fmt(total), cap:`${withData} meses con registros${allRows.some(p => p.span) ? ' (incluye sept–dic 2024)' : ''}` },
+    { lbl:'Promedio mensual', val: fmt(withData ? Math.round(total / withData) : 0), cap:'en meses con registros' },
     { lbl:'Mejor mes', val: bestIdx >= 0 && vals[bestIdx] > 0 ? fmt(vals[bestIdx]) : '—', cap: bestIdx >= 0 && vals[bestIdx] > 0 ? longLabel(rows[bestIdx]) : '' },
     { lbl: last ? longLabel(last) : 'Último mes', val: fmt(lastV || 0), cap: d === null ? '' : `${fmtPct(d)} vs ${prev ? longLabel(prev).split(' ')[0].toLowerCase() : 'mes anterior'}`, cls: d === null ? '' : d > 0 ? 'up' : d < 0 ? 'down' : 'flat' }
   ].map(t => `<div class="stat ${t.cls || ''}"><div class="stat-lbl">${t.lbl}</div><div class="stat-val">${t.val}</div><div class="stat-cap">${t.cap}</div></div>`).join('');
-  $('#mmRange').textContent = rows.length ? `${longLabel(rows[0])} → ${longLabel(last)}` : '';
+  $('#mmRange').textContent = rows.length ? `${longLabel(rows[0])} → ${longLabel(last)} (mes a mes)` : '';
 
   if(typeof Chart === 'undefined') return;
   const color = topSvc ? topSvc.color : '#002C72';

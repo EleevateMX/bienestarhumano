@@ -20,7 +20,7 @@ Dashboard interactivo, animado y responsivo para visualizar la productividad de 
 - 🌐 **Persistencia local** (LocalStorage) + opción de **sincronización a Google Sheets** vía Apps Script
 - 📥 **Exportar / Importar JSON** de respaldo
 - ⭐ **Temas Prioritarios** (Salud, Mujeres, Salud Mental) con cortes al 31 de marzo y 31 de agosto de 2026, y el avance entre cortes
-- 📅 **21 períodos mensuales reales** precargados (enero 2025 → agosto 2026 completos; septiembre 2026 en captura) extraídos del Excel oficial `MODULOS2025_2`
+- 📅 **Toda la administración precargada** desde el Excel oficial `MODULOS2025_2`: septiembre–diciembre 2024 (acumulado) y 20 meses completos de enero 2025 a agosto 2026; septiembre 2026 en captura
 - 🎨 **Identidad gráfica oficial** del Manual del Gobierno Municipal de Mérida 2024-2027 (azul `#002C72`, verde `#9DEF0F`/`#74BA47`, tipografía Poppins, lema _"Mérida, contigo es mejor"_)
 - ✨ **Animaciones**: partículas de fondo, splash, transiciones, gráficas animadas
 - 📱 **100% Responsive**: optimizado para teléfono, tablet y escritorio
@@ -220,7 +220,7 @@ Para agregar un corte nuevo de **Temas prioritarios**, copia el último bloque d
 
 Desarrollado para la **Dirección de Bienestar Humano · H. Ayuntamiento de Mérida 2024–2027**.
 
-Datos mensuales al 31 de agosto de 2026 (septiembre 2026 en captura). Temas prioritarios al 31 de agosto de 2026.
+Datos del 1 de septiembre de 2024 al 31 de agosto de 2026 (septiembre 2026 en captura). Temas prioritarios al 31 de agosto de 2026.
 
 ---
 
@@ -248,6 +248,13 @@ Datos mensuales al 31 de agosto de 2026 (septiembre 2026 en captura). Temas prio
 - **Mapa**: ya no depende de ninguna llave. Capas OpenStreetMap, CARTO y satélite Esri; si OpenStreetMap falla cambia solo. Botón para ver el mapa "Espacios físicos 2026" de Google My Maps. Los módulos que comparten sede (matutino/vespertino) se separan un poco y los servicios sin sede fija (a domicilio, ferias, comisarías) se listan debajo del mapa.
 - **Móvil**: el menú lateral ya se puede usar (el fondo oscuro lo tapaba) y la pantalla ya no se desborda a lo ancho.
 - Todas las reglas visuales nuevas están al final de `styles.css` en el bloque **v4**.
+
+---
+
+## 🆕 Versión 6 · Septiembre–diciembre 2024 incluido
+
+- El Excel trae 2024 solo como acumulado de cuatro meses (hoja `SEPT-DIC2024`), así que entra como el período **"Sept – Dic 2024 (acumulado)"**: cuenta en "Todo el histórico" (376,289 atenciones de sep 2024 a ago 2026), en la opción "Año 2024", en el acumulado de cada módulo y en el selector de período. Las gráficas de Tendencias siguen siendo mes a mes, con una nota que recuerda el acumulado de 2024.
+- Enero 2025 ya no se compara contra ese acumulado (no sería una comparación justa).
 
 ---
 

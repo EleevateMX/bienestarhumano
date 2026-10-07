@@ -29,7 +29,7 @@ const APPS_SCRIPT_URL = ''; // Ejemplo: 'https://script.google.com/macros/s/AKfy
    Súbela (p. ej. a 3) cada vez que regeneres INITIAL_PERIODS desde el Excel:
    así el navegador de cada usuaria reemplaza los meses oficiales guardados
    localmente por los nuevos, sin tocar los meses que ellas capturaron a mano. */
-const DATA_VERSION = 2;
+const DATA_VERSION = 3;
 
 /* MAPA DE UBICACIONES.
    El mapa NO necesita API key: usa OpenStreetMap y Esri (capas gratuitas).
@@ -689,15 +689,72 @@ const COLONIAS = [
 
 /* ============================================================
    PERÍODOS MENSUALES REALES
-   21 meses extraídos del Excel oficial "MODULOS2025_2" entregado
-   por la Dirección: enero 2025 → agosto 2026 completos; septiembre
-   2026 parcial (solo Salud Mental capturado al corte).
+   Septiembre–diciembre 2024 (acumulado de la hoja "SEPT-DIC2024") y
+   21 meses extraídos del Excel oficial "MODULOS2025_2" entregado por la
+   Dirección: enero 2025 → agosto 2026 completos; septiembre 2026 parcial
+   (solo Salud Mental capturado al corte).
    Cada período trae `summary` (totales por servicio), `gender`
    (hombres / mujeres, suma de todos los módulos) y `modules`
    (desglose por módulo). Generado automáticamente desde las hojas
    mensuales del Excel; no editar a mano salvo para corregir un dato.
    ============================================================ */
 const INITIAL_PERIODS = [
+  {
+    // Acumulado de 4 meses (hoja "SEPT-DIC2024" del Excel). span:4 hace que
+    // cuente en los totales anuales y del histórico sin graficarse como un mes.
+    period: '2024-12', span: 4, spanFrom: '2024-09', label: 'Sept – Dic 2024 (acumulado)',
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2024-12-15T00:00:00').toISOString(),
+    summary: { medicos:11374, odonto:6439, enfermeria:28478, rehab:5123, mental:3700, nutri:710 },
+    gender: { h:20736, m:35088 },
+    modules: {
+      aguilas: { medicos:218, odonto:526, enfermeria:162, rehab:0, mental:0, nutri:0 },
+      almanova_caucel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:588 },
+      almanova_oriente: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      almanova_pensiones: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      almanova_sur: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:1808, nutri:0 },
+      azcorra_mat: { medicos:242, odonto:373, enfermeria:894, rehab:0, mental:60, nutri:0 },
+      azcorra_vesp: { medicos:756, odonto:189, enfermeria:1746, rehab:0, mental:25, nutri:0 },
+      camm_mat: { medicos:195, odonto:127, enfermeria:1420, rehab:0, mental:113, nutri:13 },
+      camm_vesp: { medicos:365, odonto:53, enfermeria:365, rehab:0, mental:0, nutri:0 },
+      caucel: { medicos:459, odonto:157, enfermeria:1774, rehab:640, mental:160, nutri:41 },
+      cemanud: { medicos:0, odonto:0, enfermeria:1410, rehab:0, mental:0, nutri:0 },
+      chablekal: { medicos:616, odonto:235, enfermeria:1510, rehab:0, mental:0, nutri:0 },
+      chichi_suarez: { medicos:346, odonto:159, enfermeria:969, rehab:0, mental:46, nutri:0 },
+      cholul: { medicos:338, odonto:106, enfermeria:162, rehab:1107, mental:52, nutri:0 },
+      comisarias: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      crescencio_rejon: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      cruz_roja: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      emiliano_zapata: { medicos:454, odonto:70, enfermeria:1115, rehab:0, mental:0, nutri:0 },
+      ferias: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      juan_pablo: { medicos:585, odonto:0, enfermeria:1415, rehab:0, mental:0, nutri:0 },
+      kukulcan_mat: { medicos:227, odonto:264, enfermeria:592, rehab:0, mental:253, nutri:0 },
+      kukulcan_vesp: { medicos:122, odonto:184, enfermeria:223, rehab:0, mental:0, nutri:0 },
+      medico_domicilio: { medicos:1330, odonto:1369, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      meliton_mat: { medicos:195, odonto:298, enfermeria:1064, rehab:735, mental:101, nutri:9 },
+      meliton_vesp: { medicos:118, odonto:0, enfermeria:464, rehab:0, mental:115, nutri:0 },
+      molas: { medicos:332, odonto:147, enfermeria:984, rehab:0, mental:56, nutri:0 },
+      mulsay_mat: { medicos:441, odonto:297, enfermeria:1301, rehab:0, mental:0, nutri:0 },
+      mulsay_vesp: { medicos:204, odonto:182, enfermeria:313, rehab:0, mental:180, nutri:0 },
+      nora_quintana_mat: { medicos:154, odonto:173, enfermeria:818, rehab:0, mental:0, nutri:0 },
+      nora_quintana_vesp: { medicos:0, odonto:66, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      pensiones: { medicos:341, odonto:211, enfermeria:692, rehab:0, mental:111, nutri:0 },
+      plan_ayala: { medicos:56, odonto:211, enfermeria:864, rehab:0, mental:46, nutri:0 },
+      porvenir: { medicos:165, odonto:0, enfermeria:133, rehab:0, mental:0, nutri:0 },
+      renacimiento: { medicos:355, odonto:0, enfermeria:220, rehab:1584, mental:147, nutri:0 },
+      salvador_alvarado: { medicos:780, odonto:167, enfermeria:2255, rehab:0, mental:0, nutri:0 },
+      san_antonio: { medicos:276, odonto:204, enfermeria:1176, rehab:463, mental:90, nutri:13 },
+      san_jose_tzal: { medicos:116, odonto:99, enfermeria:697, rehab:70, mental:0, nutri:0 },
+      santa_rosa: { medicos:120, odonto:137, enfermeria:835, rehab:524, mental:138, nutri:11 },
+      santa_rosa_ped: { medicos:254, odonto:0, enfermeria:492, rehab:0, mental:0, nutri:0 },
+      sara_mena: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      sitpach: { medicos:279, odonto:85, enfermeria:579, rehab:0, mental:64, nutri:0 },
+      vergel: { medicos:492, odonto:125, enfermeria:1103, rehab:0, mental:135, nutri:35 },
+      xoclan_carmelitas: { medicos:443, odonto:0, enfermeria:731, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_dental: { medicos:0, odonto:225, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 }
+    }
+  },
   {
     period: '2025-01', label: 'Enero 2025',
     uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-01-15T00:00:00').toISOString(),
