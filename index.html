@@ -18,7 +18,7 @@
 <!-- ===================== PANTALLA DE CARGA ===================== -->
 <div id="splash" class="splash">
   <div class="splash-logo">
-    <img src="logo.png" alt="Bienestar Humano" class="splash-img"
+    <img src="logo-icon.png" alt="Bienestar Humano" class="splash-img"
          onload="document.getElementById('splashSvgFallback').remove();"
          onerror="this.remove();" />
     <svg viewBox="0 0 100 100" class="splash-svg" id="splashSvgFallback">
@@ -74,19 +74,19 @@
     <form id="loginForm" class="login-form">
       <div class="user-grid">
         <button type="button" class="user-chip" data-user="alejandra">
-          <span class="user-avatar" style="background:linear-gradient(135deg,#A8E063,#56AB2F)">A</span>
+          <span class="user-avatar" style="background:#74BA47">A</span>
           <span>Alejandra</span>
         </button>
         <button type="button" class="user-chip" data-user="chucho">
-          <span class="user-avatar" style="background:linear-gradient(135deg,#0E2A6B,#1E50C5)">C</span>
+          <span class="user-avatar" style="background:#002C72">C</span>
           <span>Chucho</span>
         </button>
         <button type="button" class="user-chip" data-user="sandra">
-          <span class="user-avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706)">S</span>
+          <span class="user-avatar" style="background:#FE6F61">S</span>
           <span>Sandra</span>
         </button>
         <button type="button" class="user-chip" data-user="clarisa">
-          <span class="user-avatar" style="background:linear-gradient(135deg,#EC4899,#BE185D)">C</span>
+          <span class="user-avatar" style="background:#F44C7F">C</span>
           <span>Clarisa</span>
         </button>
       </div>
@@ -97,7 +97,7 @@
       </div>
 
       <button type="submit" class="btn-login">
-        <span>Ingresar al Sistema</span>
+        <span>Entrar</span>
         <svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
 
@@ -121,7 +121,7 @@
         <svg viewBox="0 0 24 24" width="24" height="24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
       <div class="logo-mini">
-        <img src="logo.png" alt="BH" class="logo-mini-img"
+        <img src="logo-icon.png" alt="" class="logo-mini-img"
              onload="document.getElementById('miniSvgFallback').remove();"
              onerror="this.remove();" />
         <svg viewBox="0 0 100 100" width="36" height="36" id="miniSvgFallback">
@@ -161,6 +161,10 @@
         <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="2" fill="none"/></svg>
         <span>Resumen</span>
       </button>
+      <button class="nav-item" data-view="trends">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M23 6l-9.5 9.5-5-5L1 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 6h6v6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Tendencias</span>
+      </button>
       <button class="nav-item" data-view="modules">
         <svg viewBox="0 0 24 24" width="20" height="20"><rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/><rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/><rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/><rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/></svg>
         <span>Módulos</span>
@@ -169,17 +173,14 @@
         <svg viewBox="0 0 24 24" width="20" height="20"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>
         <span>Mapa</span>
       </button>
-      <button class="nav-item" data-view="trends">
-        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M23 6l-9.5 9.5-5-5L1 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 6h6v6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>Tendencias</span>
+      <button class="nav-item" data-view="priority">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2L15 8l7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+        <span>Temas prioritarios</span>
       </button>
+      <div class="nav-sep" role="separator"></div>
       <button class="nav-item" data-view="data">
         <svg viewBox="0 0 24 24" width="20" height="20"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Cargar datos</span>
-      </button>
-      <button class="nav-item" data-view="priority">
-        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2L15 8l7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
-        <span>Temas Prioritarios</span>
       </button>
     </nav>
     <div class="sidebar-footer">
@@ -192,98 +193,76 @@
 
   <!-- ============== VISTA: RESUMEN ============== -->
   <section class="view active" id="view-overview">
-    <div class="hero-banner">
-      <div class="hero-content">
-        <div class="hero-tag">PANEL EJECUTIVO</div>
-        <h1 class="hero-title">Indicadores de <span class="hl">Bienestar Humano</span></h1>
-        <p class="hero-sub" id="heroPeriod">Concentrado del período seleccionado</p>
+    <div class="hero">
+      <div class="hero-main">
+        <h1 class="hero-period" id="heroPeriod">Resumen del mes</h1>
+        <div class="hero-figure">
+          <span class="hero-number" id="kpiTotal">0</span>
+          <span class="hero-unit">atenciones registradas</span>
+        </div>
+        <div class="hero-trend"><span class="kpi-trend" id="kpiTotalTrend"></span></div>
       </div>
-      <div class="hero-orb"></div>
+      <div class="hero-side">
+        <div class="hero-spark"><canvas id="sparkTotal" aria-label="Tendencia de los últimos 8 meses"></canvas></div>
+        <p class="hero-spark-cap">Tendencia de los últimos 8 meses</p>
+      </div>
+      <div class="mix" id="mixBar" role="img" aria-label="Composición de las atenciones por servicio"></div>
+      <ul class="hero-facts" id="heroFacts"></ul>
     </div>
 
     <div class="kpi-grid">
-      <div class="kpi-card kpi-primary" data-anim="0">
-        <div class="kpi-icon">
-          <svg viewBox="0 0 24 24" width="28" height="28"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="kpi-label">Total de atenciones</div>
-        <div class="kpi-value" data-target="0" id="kpiTotal">0</div>
-        <div class="kpi-trend" id="kpiTotalTrend"></div>
-        <div class="kpi-spark"><canvas id="sparkTotal"></canvas></div>
-      </div>
-
-      <div class="kpi-card" data-anim="1">
-        <div class="kpi-icon kpi-icon-blue">
-          <svg viewBox="0 0 24 24" width="24" height="24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="kpi-label">Consultas Médicas</div>
-        <div class="kpi-value" data-target="0" id="kpiMedicos">0</div>
+      <article class="kpi-card" data-anim="0" style="--c:#006AFF">
+        <div class="kpi-top"><span class="kpi-dot"></span><span class="kpi-label">Consultas médicas</span><span class="kpi-share" id="kpiMedicosShare"></span></div>
+        <div class="kpi-value" id="kpiMedicos">0</div>
         <div class="kpi-trend" id="kpiMedicosTrend"></div>
-      </div>
-
-      <div class="kpi-card" data-anim="2">
-        <div class="kpi-icon kpi-icon-green">
-          <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/></svg>
-        </div>
-        <div class="kpi-label">Odontología</div>
-        <div class="kpi-value" data-target="0" id="kpiOdonto">0</div>
+      </article>
+      <article class="kpi-card" data-anim="1" style="--c:#74BA47">
+        <div class="kpi-top"><span class="kpi-dot"></span><span class="kpi-label">Odontología</span><span class="kpi-share" id="kpiOdontoShare"></span></div>
+        <div class="kpi-value" id="kpiOdonto">0</div>
         <div class="kpi-trend" id="kpiOdontoTrend"></div>
-      </div>
-
-      <div class="kpi-card" data-anim="3">
-        <div class="kpi-icon kpi-icon-orange">
-          <svg viewBox="0 0 24 24" width="24" height="24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
-        </div>
-        <div class="kpi-label">Enfermería</div>
-        <div class="kpi-value" data-target="0" id="kpiEnfermeria">0</div>
+      </article>
+      <article class="kpi-card" data-anim="2" style="--c:#002C72">
+        <div class="kpi-top"><span class="kpi-dot"></span><span class="kpi-label">Enfermería</span><span class="kpi-share" id="kpiEnfermeriaShare"></span></div>
+        <div class="kpi-value" id="kpiEnfermeria">0</div>
         <div class="kpi-trend" id="kpiEnfermeriaTrend"></div>
-      </div>
-
-      <div class="kpi-card" data-anim="4">
-        <div class="kpi-icon kpi-icon-purple">
-          <svg viewBox="0 0 24 24" width="24" height="24"><path d="M9 11H7a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h2zm6 0h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2zM5 11V8a7 7 0 0 1 14 0v3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="kpi-label">Rehabilitación</div>
-        <div class="kpi-value" data-target="0" id="kpiRehab">0</div>
+      </article>
+      <article class="kpi-card" data-anim="3" style="--c:#FE6F61">
+        <div class="kpi-top"><span class="kpi-dot"></span><span class="kpi-label">Rehabilitación</span><span class="kpi-share" id="kpiRehabShare"></span></div>
+        <div class="kpi-value" id="kpiRehab">0</div>
         <div class="kpi-trend" id="kpiRehabTrend"></div>
-      </div>
-
-      <div class="kpi-card" data-anim="5">
-        <div class="kpi-icon kpi-icon-pink">
-          <svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="kpi-label">Salud Mental</div>
-        <div class="kpi-value" data-target="0" id="kpiMental">0</div>
+      </article>
+      <article class="kpi-card" data-anim="4" style="--c:#F44C7F">
+        <div class="kpi-top"><span class="kpi-dot"></span><span class="kpi-label">Salud mental</span><span class="kpi-share" id="kpiMentalShare"></span></div>
+        <div class="kpi-value" id="kpiMental">0</div>
         <div class="kpi-trend" id="kpiMentalTrend"></div>
-      </div>
+      </article>
+      <article class="kpi-card" data-anim="5" style="--c:#9DEF0F">
+        <div class="kpi-top"><span class="kpi-dot"></span><span class="kpi-label">Nutrición</span><span class="kpi-share" id="kpiNutriShare"></span></div>
+        <div class="kpi-value" id="kpiNutri">0</div>
+        <div class="kpi-trend" id="kpiNutriTrend"></div>
+      </article>
     </div>
 
     <div class="charts-row">
-      <div class="chart-card chart-card-lg">
-        <div class="chart-head">
-          <h3>Distribución de servicios</h3>
-          <div class="chart-tabs">
-            <button class="chip active" data-chart-mode="bar">Barras</button>
-            <button class="chip" data-chart-mode="doughnut">Dona</button>
-          </div>
-        </div>
-        <div class="chart-body"><canvas id="distChart"></canvas></div>
-      </div>
-
       <div class="chart-card">
-        <div class="chart-head"><h3>Top 10 módulos por atenciones</h3></div>
-        <div class="chart-body"><canvas id="topChart"></canvas></div>
+        <div class="chart-head"><h3>Módulos con más atenciones</h3></div>
+        <div class="chart-body chart-body-tall"><canvas id="topChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head"><h3>Atenciones por sexo</h3></div>
+        <div class="chart-body"><canvas id="genderChart"></canvas></div>
+        <p class="chart-note" id="genderNote"></p>
       </div>
     </div>
 
-    <div class="charts-row">
-      <div class="chart-card chart-card-lg">
-        <div class="chart-head"><h3>Atenciones por género</h3></div>
-        <div class="chart-body"><canvas id="genderChart"></canvas></div>
-      </div>
+    <div class="charts-row charts-row-rev">
       <div class="chart-card">
         <div class="chart-head"><h3>Estatus de módulos</h3></div>
         <div class="chart-body"><canvas id="statusChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head"><h3>Módulos activos sin registros este mes</h3><span class="chip-count" id="idleCount"></span></div>
+        <ul class="idle-list" id="idleList"></ul>
       </div>
     </div>
   </section>
@@ -297,7 +276,11 @@
       </div>
       <div class="view-tools">
         <input type="search" id="moduleSearch" placeholder="Buscar módulo..." />
-        <select id="statusFilter">
+        <select id="moduleSort" aria-label="Ordenar módulos">
+          <option value="total">Más atenciones primero</option>
+          <option value="name">Orden alfabético</option>
+        </select>
+        <select id="statusFilter" aria-label="Filtrar por estatus">
           <option value="all">Todos los estatus</option>
           <option value="ACTIVO">Activos</option>
           <option value="RECONV">Reconvertidos</option>
@@ -314,17 +297,30 @@
     <div class="view-head">
       <div>
         <h2>Mapa de módulos</h2>
-        <p class="muted">Ubicación geográfica e indicadores por colonia</p>
+        <p class="muted">Ubicación de cada módulo y sus atenciones del mes seleccionado</p>
       </div>
-      <div class="map-legend">
-        <span class="lg lg-active"></span><small>Activo</small>
-        <span class="lg lg-reconv"></span><small>Reconvertido</small>
-        <span class="lg lg-closed"></span><small>Cerrado</small>
+      <div class="view-tools map-tools">
+        <div class="seg" role="group" aria-label="Tipo de mapa">
+          <button class="seg-btn active" data-map-mode="modules">Módulos e indicadores</button>
+          <button class="seg-btn" data-map-mode="mymaps">Espacios físicos 2026</button>
+        </div>
+        <div class="map-legend">
+          <span class="lg lg-active"></span><small>Activo</small>
+          <span class="lg lg-reconv"></span><small>Reconvertido</small>
+          <span class="lg lg-closed"></span><small>Cerrado</small>
+        </div>
       </div>
     </div>
-    <div id="map"></div>
+    <div class="map-stage">
+      <div id="map"></div>
+      <div id="myMapsWrap" class="mymaps-wrap hidden">
+        <iframe id="myMapsFrame" title="Espacios físicos 2026 · Google My Maps" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <a id="myMapsLink" class="btn-secondary mymaps-link" target="_blank" rel="noopener">Abrir en Google Maps</a>
+      </div>
+    </div>
+    <div class="map-movil" id="mapMovil"></div>
     <div class="map-info" id="mapInfo">
-      <p class="muted">Selecciona un módulo en el mapa para ver detalles.</p>
+      <p class="muted">Toca un módulo en el mapa para ver su detalle. Usa el ícono de capas (arriba a la derecha) para cambiar a vista satelital.</p>
     </div>
   </section>
 
@@ -332,22 +328,68 @@
   <section class="view" id="view-trends">
     <div class="view-head">
       <div>
-        <h2>Tendencias históricas</h2>
-        <p class="muted">Evolución mensual de indicadores</p>
+        <h2>Tendencias</h2>
+        <p class="muted" id="trendsSub">Evolución mensual de las atenciones</p>
+      </div>
+      <div class="view-tools trend-tools">
+        <select id="trendMetric" aria-label="Indicador a graficar">
+          <option value="total">Todas las atenciones</option>
+          <option value="medicos">Consultas médicas</option>
+          <option value="odonto">Odontología</option>
+          <option value="enfermeria">Enfermería</option>
+          <option value="rehab">Rehabilitación</option>
+          <option value="mental">Salud mental</option>
+          <option value="nutri">Nutrición</option>
+        </select>
+        <div class="seg" role="group" aria-label="Rango de meses">
+          <button class="seg-btn" data-range="6">6 meses</button>
+          <button class="seg-btn active" data-range="12">12 meses</button>
+          <button class="seg-btn" data-range="all">Todo</button>
+        </div>
+        <label class="check" for="trendPartial"><input type="checkbox" id="trendPartial" /> Incluir mes en captura</label>
       </div>
     </div>
+
+    <div class="trend-stats" id="trendStats"></div>
+
     <div class="chart-card chart-card-full">
-      <div class="chart-head"><h3>Atenciones totales por mes</h3></div>
-      <div class="chart-body" style="height:340px"><canvas id="trendChart"></canvas></div>
+      <div class="chart-head">
+        <h3 id="trendMainTitle">Atenciones por mes</h3>
+        <span class="chart-sub" id="trendMainSub"></span>
+      </div>
+      <div class="chart-body trend-main"><canvas id="trendChart"></canvas></div>
+      <p class="trend-insight" id="trendInsight"></p>
     </div>
-    <div class="charts-row">
+
+    <div class="charts-row charts-row-even">
       <div class="chart-card">
-        <div class="chart-head"><h3>Médicos vs Odontología vs Enfermería</h3></div>
-        <div class="chart-body" style="height:280px"><canvas id="multiTrendChart"></canvas></div>
+        <div class="chart-head"><h3>Mismo mes, año contra año</h3><span class="chart-sub" id="yoySub"></span></div>
+        <div class="chart-body"><canvas id="yoyChart"></canvas></div>
+        <p class="chart-note">Cada barra es un mes; los colores son los años. Sirve para ver si este año va mejor que el anterior.</p>
       </div>
       <div class="chart-card">
-        <div class="chart-head"><h3>Crecimiento mensual (%)</h3></div>
-        <div class="chart-body" style="height:280px"><canvas id="growthChart"></canvas></div>
+        <div class="chart-head"><h3>Cambio respecto al mes anterior</h3></div>
+        <div class="chart-body"><canvas id="growthChart"></canvas></div>
+        <p class="chart-note">Verde: subió. Coral: bajó. El porcentaje compara cada mes con el inmediato anterior.</p>
+      </div>
+    </div>
+
+    <div class="chart-card chart-card-full">
+      <div class="chart-head"><h3>¿De qué se componen las atenciones cada mes?</h3><span class="chart-sub">Toca un servicio en la leyenda para ocultarlo</span></div>
+      <div class="chart-body trend-stack"><canvas id="stackChart"></canvas></div>
+    </div>
+
+    <div class="chart-card chart-card-full">
+      <div class="chart-head"><h3>Detalle mes por mes</h3><span class="chart-sub">Del más reciente al más antiguo</span></div>
+      <div class="data-table-wrap trend-table-wrap">
+        <table class="data-table trend-table" id="trendTable">
+          <thead>
+            <tr>
+              <th>Mes</th><th>Médicos</th><th>Odontología</th><th>Enfermería</th><th>Rehabilitación</th><th>Salud mental</th><th>Nutrición</th><th>Total</th><th>vs. mes anterior</th>
+            </tr>
+          </thead>
+          <tbody id="trendTableBody"></tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -440,8 +482,8 @@
   <section class="view" id="view-priority">
     <div class="view-head">
       <div>
-        <h2>Temas Prioritarios</h2>
-        <p class="muted">Concentrado del 01 de septiembre 2024 al período actual</p>
+        <h2>Temas prioritarios</h2>
+        <p class="muted">Acumulado del 1 de septiembre de 2024 al 31 de marzo de 2026</p>
       </div>
     </div>
 
@@ -455,7 +497,7 @@
         <ul id="priMujeres" class="priority-list"></ul>
       </div>
       <div class="priority-card priority-mental">
-        <header><h3>Salud Mental · ALMA NOVA</h3><div class="pcicon">🧠</div></header>
+        <header><h3>Salud mental (Alma Nova)</h3><div class="pcicon">🧠</div></header>
         <ul id="priMental" class="priority-list"></ul>
       </div>
     </div>

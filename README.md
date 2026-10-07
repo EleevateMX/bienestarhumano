@@ -10,13 +10,13 @@ Dashboard interactivo, animado y responsivo para visualizar la productividad de 
 - 🔐 **Login con 4 usuarios** (Alejandra, Chucho, Sandra, Clarisa)
 - 🎨 **Logo oficial** de la Dirección integrado (`logo.png` + `logo-icon.png`)
 - 📊 **6 KPI animados** con contadores y comparación contra el mes anterior
-- 🗺️ **Mapa interactivo** con la ubicación de cada módulo en Mérida (Leaflet + OpenStreetMap)
-- 📈 **Tendencias históricas** (atenciones por mes, multi-servicio, % de crecimiento)
+- 🗺️ **Mapa interactivo** con la ubicación de cada módulo en Mérida (Leaflet + OpenStreetMap, **sin API key**) y el mapa "Espacios físicos 2026" de Google My Maps
+- 📈 **Tendencias** legibles: selector de indicador y rango, resumen del período, lectura en lenguaje llano, comparativo año contra año, composición por servicio y tabla mes por mes
 - 📝 **Captura mensual** con barra de progreso para mantener la información al 100%
 - 🌐 **Persistencia local** (LocalStorage) + opción de **sincronización a Google Sheets** vía Apps Script
 - 📥 **Exportar / Importar JSON** de respaldo
 - ⭐ **Temas Prioritarios** (Salud, Mujeres, Salud Mental) ya cargados con datos al 31 de marzo de 2026
-- 📅 **21 períodos mensuales reales** precargados (enero 2025 → septiembre 2026) extraídos del Excel oficial `MODULOS2025`
+- 📅 **21 períodos mensuales reales** precargados (enero 2025 → agosto 2026 completos; septiembre 2026 en captura) extraídos del Excel oficial `MODULOS2025_2`
 - 🎨 **Identidad gráfica oficial** del Manual del Gobierno Municipal de Mérida 2024-2027 (azul `#002C72`, verde `#9DEF0F`/`#74BA47`, tipografía Poppins, lema _"Mérida, contigo es mejor"_)
 - ✨ **Animaciones**: partículas de fondo, splash, transiciones, gráficas animadas
 - 📱 **100% Responsive**: optimizado para teléfono, tablet y escritorio
@@ -173,6 +173,8 @@ Esto permite que **los datos cargados se guarden en una hoja de Google Sheets** 
 | Datos del concentrado anual  | `data.js` → `PRIORITY_DATA`               |
 | Colores                      | `styles.css` → variables `:root`          |
 | Endpoint de Apps Script      | `data.js` → `APPS_SCRIPT_URL`             |
+| Mapa (id de My Maps, llave opcional) | `data.js` → `MAP_CONFIG`          |
+| Versión de los datos oficiales | `data.js` → `DATA_VERSION`              |
 | Logo                         | Reemplaza `logo.png` y `logo-icon.png`    |
 
 ---
@@ -180,7 +182,9 @@ Esto permite que **los datos cargados se guarden en una hoja de Google Sheets** 
 ## 🆘 Solución de problemas
 
 - **"No me deja entrar"**: revisa que escribiste bien la contraseña (respeta mayúsculas).
-- **El mapa no carga**: revisa tu conexión a internet (usa Leaflet desde CDN).
+- **El mapa no carga**: revisa tu conexión a internet (usa Leaflet desde CDN). El mapa **no necesita API key**: usa OpenStreetMap y, si esa capa falla, cambia solo a CARTO. Con el ícono de capas puedes pasar a vista satelital (Esri).
+- **No se ve "Espacios físicos 2026"**: ese mapa vive en Google My Maps; debe estar compartido como _"Cualquier persona con el enlace"_. El id del mapa está en `data.js` → `MAP_CONFIG.myMapsId`.
+- **Actualicé el Excel y no veo los datos nuevos**: sube `DATA_VERSION` en `data.js` (p. ej. de 2 a 3). Al abrir la app, cada navegador reemplaza los meses oficiales guardados y conserva los capturados a mano.
 - **Las gráficas se ven en blanco**: actualiza la página (F5). Si persiste, revisa la conexión a internet: la librería de gráficas se carga desde un CDN público.
 - **El logo no aparece**: verifica que subiste `logo.png` y `logo-icon.png` a GitHub junto con los demás archivos. El sistema usa un fallback SVG si los PNG no se encuentran.
 - **Quiero recuperar datos borrados**: usa el JSON exportado más reciente con _"Importar"_.
@@ -193,8 +197,31 @@ Esto permite que **los datos cargados se guarden en una hoja de Google Sheets** 
 
 Desarrollado para la **Dirección de Bienestar Humano · H. Ayuntamiento de Mérida 2024–2027**.
 
-Datos del concentrado al 31 de marzo de 2026.
+Datos mensuales al 31 de agosto de 2026 (septiembre 2026 en captura). Temas prioritarios al 31 de marzo de 2026.
 
 ---
 
 > _Mérida Contigo es Mejor_ 🌿
+
+---
+
+## 🆕 Versión 3 · Mejoras visuales
+
+- **Resumen rediseñado**: el mes seleccionado, el total de atenciones, la tendencia de 8 meses y una barra que muestra cómo se reparten las atenciones entre servicios.
+- **6 indicadores parejos** (se agregó Nutrición) con el % que representa cada servicio.
+- **Atenciones por sexo con datos reales** del Excel (antes era una proporción fija).
+- **Nuevo panel "Módulos activos sin registros este mes"** para detectar quién no reportó.
+- **Módulos ordenables** por más atenciones o alfabético; los ceros se ven atenuados.
+- Logos recortados y sin fondo; menú reordenado (consulta arriba, captura abajo).
+- Respeta "reducir movimiento" del sistema y tiene foco visible con teclado.
+- Todas las mejoras visuales están en un bloque al final de `styles.css` marcado como **v3**: si quieres volver al diseño anterior, basta con borrar ese bloque.
+
+---
+
+## 🆕 Versión 4 · Datos a agosto 2026, Tendencias legibles y mapa sin API key
+
+- **Datos actualizados** desde `MODULOS2025_2.xlsx`: 20 meses completos (enero 2025 → agosto 2026) y septiembre 2026 marcado como *en captura*. Se corrigió la psicología en comisarías de febrero a junio de 2025 (filas sin nombre en el Excel) y el desglose hombres/mujeres se calcula desde las columnas por servicio, que sí cuadran con los totales.
+- **Tendencias rediseñadas**: elige el indicador (total o un servicio) y el rango (6, 12 meses o todo); arriba ves total, promedio, mejor mes y comparación con el mismo mes del año anterior; la gráfica principal trae los valores escritos y la línea de promedio; debajo, un párrafo que explica el mes en palabras, el comparativo 2025 vs 2026, el cambio mes a mes, la composición por servicio y la tabla mes por mes.
+- **Mapa**: ya no depende de ninguna llave. Capas OpenStreetMap, CARTO y satélite Esri; si OpenStreetMap falla cambia solo. Botón para ver el mapa "Espacios físicos 2026" de Google My Maps. Los módulos que comparten sede (matutino/vespertino) se separan un poco y los servicios sin sede fija (a domicilio, ferias, comisarías) se listan debajo del mapa.
+- **Móvil**: el menú lateral ya se puede usar (el fondo oscuro lo tapaba) y la pantalla ya no se desborda a lo ancho.
+- Todas las reglas visuales nuevas están al final de `styles.css` en el bloque **v4**.

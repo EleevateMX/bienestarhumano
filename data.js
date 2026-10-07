@@ -2,8 +2,9 @@
    BIENESTAR HUMANO — BASE DE DATOS DEL SISTEMA
    - Usuarios y contraseñas
    - Módulos con coordenadas en Mérida, Yucatán
-   - 21 períodos mensuales REALES (ene 2025 → sept 2026) extraídos
-     del Excel oficial "MODULOS2025"
+   - 21 períodos mensuales REALES (ene 2025 → ago 2026 completos,
+     sept 2026 parcial) extraídos del Excel oficial "MODULOS2025_2"
+   - Acumulado de la administración (sept 2024 → sept 2026)
    - Temas Prioritarios al 31 de marzo de 2026
    ============================================================ */
 
@@ -19,6 +20,25 @@ const USERS = {
    Reemplaza esta URL por la del Web App publicado en Apps Script.
    Si queda vacío, el sistema funciona 100% en LocalStorage. */
 const APPS_SCRIPT_URL = ''; // Ejemplo: 'https://script.google.com/macros/s/AKfy.../exec'
+
+/* VERSIÓN DE LOS DATOS OFICIALES.
+   Súbela (p. ej. a 3) cada vez que regeneres INITIAL_PERIODS desde el Excel:
+   así el navegador de cada usuaria reemplaza los meses oficiales guardados
+   localmente por los nuevos, sin tocar los meses que ellas capturaron a mano. */
+const DATA_VERSION = 2;
+
+/* MAPA DE UBICACIONES.
+   El mapa NO necesita API key: usa OpenStreetMap y Esri (capas gratuitas).
+   - myMapsId: id del mapa "ESPACIOS FÍSICOS 2026" de Google My Maps (viene del
+     archivo espacios-fisicos-2026.kml). Se muestra con el botón "Espacios físicos".
+   - maptilerKey: OPCIONAL. Si algún día quieres un estilo de MapTiler, pega aquí
+     tu llave y aparecerá como capa adicional. Vacío = no se usa. */
+const MAP_CONFIG = {
+  center: [20.97, -89.62],
+  zoom: 12,
+  myMapsId: '1e0q43k8PyBzwQr3s8WOAXIr49DLz-d0',
+  maptilerKey: ''
+};
 
 /* MÓDULOS MÉDICOS — coordenadas aproximadas en Mérida, Yucatán.
    Lat/Lng centradas por colonia; pueden ajustarse después. */
@@ -73,16 +93,20 @@ const MODULES = [
 
 /* ============================================================
    PERÍODOS MENSUALES REALES
-   21 meses extraídos del Excel oficial "MODULOS2025" entregado
-   por la Dirección: enero 2025 → septiembre 2026 (sept parcial).
-   Cada período trae `summary` (totales por servicio) y `modules`
-   (desglose por módulo).
+   21 meses extraídos del Excel oficial "MODULOS2025_2" entregado
+   por la Dirección: enero 2025 → agosto 2026 completos; septiembre
+   2026 parcial (solo Salud Mental capturado al corte).
+   Cada período trae `summary` (totales por servicio), `gender`
+   (hombres / mujeres, suma de todos los módulos) y `modules`
+   (desglose por módulo). Generado automáticamente desde las hojas
+   mensuales del Excel; no editar a mano salvo para corregir un dato.
    ============================================================ */
 const INITIAL_PERIODS = [
   {
     period: '2025-01', label: 'Enero 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-01-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-01-15T00:00:00').toISOString(),
     summary: { medicos:2573, odonto:1422, enfermeria:5474, rehab:1323, mental:1231, nutri:971 },
+    gender: { h:4481, m:8513 },
     modules: {
       aguilas: { medicos:18, odonto:62, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -127,13 +151,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:56, odonto:0, enfermeria:64, rehab:0, mental:30, nutri:12 },
       xoclan_carmelitas: { medicos:60, odonto:28, enfermeria:151, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:115, odonto:34, enfermeria:322, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-02', label: 'Febrero 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-02-15T00:00:00').toISOString(),
-    summary: { medicos:3832, odonto:1477, enfermeria:5260, rehab:2114, mental:1423, nutri:1291 },
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-02-15T00:00:00').toISOString(),
+    summary: { medicos:3832, odonto:1477, enfermeria:5260, rehab:2114, mental:1525, nutri:1291 },
+    gender: { h:5294, m:10205 },
     modules: {
       aguilas: { medicos:53, odonto:53, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -149,6 +174,7 @@ const INITIAL_PERIODS = [
       chablekal: { medicos:226, odonto:63, enfermeria:71, rehab:0, mental:0, nutri:0 },
       chichi_suarez: { medicos:108, odonto:89, enfermeria:180, rehab:0, mental:18, nutri:0 },
       cholul: { medicos:115, odonto:42, enfermeria:123, rehab:406, mental:16, nutri:0 },
+      comisarias: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:102, nutri:0 },
       cruz_roja: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:102, nutri:0 },
       emiliano_zapata: { medicos:135, odonto:29, enfermeria:105, rehab:0, mental:0, nutri:0 },
       ferias: { medicos:276, odonto:212, enfermeria:919, rehab:229, mental:0, nutri:925 },
@@ -177,13 +203,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:195, odonto:53, enfermeria:246, rehab:0, mental:24, nutri:29 },
       xoclan_carmelitas: { medicos:96, odonto:0, enfermeria:150, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:80, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-03', label: 'Marzo 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-03-15T00:00:00').toISOString(),
-    summary: { medicos:2622, odonto:1270, enfermeria:5762, rehab:1067, mental:1095, nutri:1151 },
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-03-15T00:00:00').toISOString(),
+    summary: { medicos:2622, odonto:1270, enfermeria:5762, rehab:1067, mental:1167, nutri:1151 },
+    gender: { h:4480, m:8559 },
     modules: {
       aguilas: { medicos:36, odonto:60, enfermeria:93, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -199,6 +226,7 @@ const INITIAL_PERIODS = [
       chablekal: { medicos:164, odonto:48, enfermeria:170, rehab:0, mental:0, nutri:0 },
       chichi_suarez: { medicos:0, odonto:75, enfermeria:167, rehab:0, mental:12, nutri:0 },
       cholul: { medicos:136, odonto:40, enfermeria:204, rehab:225, mental:12, nutri:0 },
+      comisarias: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:72, nutri:0 },
       cruz_roja: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:51, nutri:0 },
       emiliano_zapata: { medicos:97, odonto:33, enfermeria:149, rehab:0, mental:0, nutri:0 },
       ferias: { medicos:275, odonto:259, enfermeria:1355, rehab:130, mental:0, nutri:661 },
@@ -227,13 +255,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:161, odonto:40, enfermeria:346, rehab:0, mental:24, nutri:27 },
       xoclan_carmelitas: { medicos:96, odonto:0, enfermeria:63, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:68, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-04', label: 'Abril 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-04-15T00:00:00').toISOString(),
-    summary: { medicos:2473, odonto:1202, enfermeria:9432, rehab:1349, mental:1180, nutri:1405 },
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-04-15T00:00:00').toISOString(),
+    summary: { medicos:2473, odonto:1202, enfermeria:9432, rehab:1349, mental:1254, nutri:1405 },
+    gender: { h:5681, m:11434 },
     modules: {
       aguilas: { medicos:23, odonto:15, enfermeria:294, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -249,6 +278,7 @@ const INITIAL_PERIODS = [
       chablekal: { medicos:155, odonto:57, enfermeria:464, rehab:0, mental:0, nutri:0 },
       chichi_suarez: { medicos:161, odonto:67, enfermeria:347, rehab:0, mental:15, nutri:0 },
       cholul: { medicos:96, odonto:28, enfermeria:375, rehab:269, mental:10, nutri:0 },
+      comisarias: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:74, nutri:0 },
       cruz_roja: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:193, nutri:0 },
       emiliano_zapata: { medicos:99, odonto:35, enfermeria:200, rehab:0, mental:0, nutri:0 },
       ferias: { medicos:315, odonto:248, enfermeria:1279, rehab:21, mental:0, nutri:985 },
@@ -277,13 +307,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:114, odonto:68, enfermeria:357, rehab:0, mental:18, nutri:18 },
       xoclan_carmelitas: { medicos:56, odonto:0, enfermeria:150, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:70, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:43, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:43, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-05', label: 'Mayo 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-05-15T00:00:00').toISOString(),
-    summary: { medicos:2246, odonto:994, enfermeria:8360, rehab:311, mental:963, nutri:955 },
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-05-15T00:00:00').toISOString(),
+    summary: { medicos:2246, odonto:994, enfermeria:8360, rehab:311, mental:1035, nutri:955 },
+    gender: { h:4599, m:9302 },
     modules: {
       aguilas: { medicos:5, odonto:60, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:4, nutri:0 },
@@ -299,6 +330,7 @@ const INITIAL_PERIODS = [
       chablekal: { medicos:108, odonto:51, enfermeria:379, rehab:0, mental:0, nutri:0 },
       chichi_suarez: { medicos:44, odonto:36, enfermeria:194, rehab:0, mental:11, nutri:0 },
       cholul: { medicos:79, odonto:21, enfermeria:251, rehab:85, mental:11, nutri:0 },
+      comisarias: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:72, nutri:0 },
       cruz_roja: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:77, nutri:0 },
       emiliano_zapata: { medicos:108, odonto:46, enfermeria:374, rehab:0, mental:0, nutri:0 },
       ferias: { medicos:187, odonto:200, enfermeria:1178, rehab:80, mental:0, nutri:502 },
@@ -327,13 +359,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:158, odonto:42, enfermeria:362, rehab:0, mental:16, nutri:31 },
       xoclan_carmelitas: { medicos:2, odonto:0, enfermeria:351, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:81, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:70, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:70, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-06', label: 'Junio 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-06-15T00:00:00').toISOString(),
-    summary: { medicos:2159, odonto:1239, enfermeria:8166, rehab:1611, mental:1179, nutri:1510 },
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-06-15T00:00:00').toISOString(),
+    summary: { medicos:2159, odonto:1239, enfermeria:8166, rehab:1611, mental:1224, nutri:1510 },
+    gender: { h:4995, m:10914 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:137, nutri:0 },
@@ -349,6 +382,7 @@ const INITIAL_PERIODS = [
       chablekal: { medicos:206, odonto:65, enfermeria:306, rehab:0, mental:0, nutri:0 },
       chichi_suarez: { medicos:36, odonto:50, enfermeria:229, rehab:0, mental:9, nutri:0 },
       cholul: { medicos:87, odonto:16, enfermeria:196, rehab:497, mental:10, nutri:0 },
+      comisarias: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:45, nutri:0 },
       cruz_roja: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:88, nutri:0 },
       emiliano_zapata: { medicos:126, odonto:51, enfermeria:173, rehab:0, mental:0, nutri:0 },
       ferias: { medicos:305, odonto:267, enfermeria:1074, rehab:249, mental:0, nutri:1006 },
@@ -377,13 +411,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:77, odonto:46, enfermeria:413, rehab:0, mental:31, nutri:35 },
       xoclan_carmelitas: { medicos:49, odonto:0, enfermeria:139, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:150, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:9, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:9, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-07', label: 'Julio 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-07-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-07-15T00:00:00').toISOString(),
     summary: { medicos:1738, odonto:1398, enfermeria:8572, rehab:1812, mental:1131, nutri:1299 },
+    gender: { h:5683, m:10267 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:185, nutri:0 },
@@ -427,13 +462,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:91, odonto:82, enfermeria:297, rehab:0, mental:39, nutri:19 },
       xoclan_carmelitas: { medicos:47, odonto:0, enfermeria:244, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:197, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:41, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:41, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-08', label: 'Agosto 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-08-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-08-15T00:00:00').toISOString(),
     summary: { medicos:2696, odonto:1134, enfermeria:10203, rehab:1716, mental:1364, nutri:1762 },
+    gender: { h:5831, m:13044 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:216, nutri:0 },
@@ -477,13 +513,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:136, odonto:51, enfermeria:310, rehab:0, mental:26, nutri:0 },
       xoclan_carmelitas: { medicos:117, odonto:0, enfermeria:206, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:81, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:45, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:45, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-09', label: 'Septiembre 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-09-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-09-15T00:00:00').toISOString(),
     summary: { medicos:2662, odonto:1278, enfermeria:11864, rehab:1423, mental:1197, nutri:1462 },
+    gender: { h:6415, m:13471 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:211, nutri:0 },
@@ -527,13 +564,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:158, odonto:72, enfermeria:1076, rehab:0, mental:30, nutri:10 },
       xoclan_carmelitas: { medicos:79, odonto:0, enfermeria:206, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:88, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:40, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:40, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-10', label: 'Octubre 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-10-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-10-15T00:00:00').toISOString(),
     summary: { medicos:3260, odonto:1424, enfermeria:12960, rehab:2024, mental:1220, nutri:1610 },
+    gender: { h:7549, m:14949 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:168, nutri:0 },
@@ -577,13 +615,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:218, odonto:86, enfermeria:1005, rehab:0, mental:34, nutri:21 },
       xoclan_carmelitas: { medicos:66, odonto:0, enfermeria:182, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:103, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:40, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:40, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-11', label: 'Noviembre 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-11-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-11-15T00:00:00').toISOString(),
     summary: { medicos:1997, odonto:860, enfermeria:12069, rehab:1487, mental:1240, nutri:422 },
+    gender: { h:5353, m:12722 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:183, nutri:0 },
@@ -627,13 +666,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:150, odonto:47, enfermeria:810, rehab:0, mental:23, nutri:22 },
       xoclan_carmelitas: { medicos:82, odonto:0, enfermeria:288, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:76, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:56, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:56, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2025-12', label: 'Diciembre 2025',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2025-12-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2025-12-15T00:00:00').toISOString(),
     summary: { medicos:1665, odonto:583, enfermeria:5936, rehab:1005, mental:959, nutri:174 },
+    gender: { h:3772, m:6550 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_norte: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:123, nutri:0 },
@@ -677,13 +717,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:80, odonto:46, enfermeria:357, rehab:0, mental:28, nutri:4 },
       xoclan_carmelitas: { medicos:57, odonto:0, enfermeria:113, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:25, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:29, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:29, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2026-01', label: 'Enero 2026',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2026-01-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2026-01-15T00:00:00').toISOString(),
     summary: { medicos:2472, odonto:1070, enfermeria:8453, rehab:1164, mental:1414, nutri:1680 },
+    gender: { h:5166, m:11087 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_caucel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -730,13 +771,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:133, odonto:54, enfermeria:485, rehab:0, mental:27, nutri:13 },
       xoclan_carmelitas: { medicos:66, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:46, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:47, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:47, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2026-02', label: 'Febrero 2026',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2026-02-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2026-02-15T00:00:00').toISOString(),
     summary: { medicos:2304, odonto:715, enfermeria:10181, rehab:1333, mental:1348, nutri:335 },
+    gender: { h:5279, m:10937 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_caucel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -783,13 +825,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:132, odonto:53, enfermeria:625, rehab:0, mental:41, nutri:25 },
       xoclan_carmelitas: { medicos:51, odonto:0, enfermeria:117, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:73, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:47, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:47, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2026-03', label: 'Marzo 2026',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2026-03-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2026-03-15T00:00:00').toISOString(),
     summary: { medicos:2229, odonto:939, enfermeria:9635, rehab:1560, mental:1353, nutri:417 },
+    gender: { h:5187, m:10946 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_caucel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -836,13 +879,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:106, odonto:87, enfermeria:777, rehab:0, mental:31, nutri:27 },
       xoclan_carmelitas: { medicos:62, odonto:0, enfermeria:223, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:86, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:50, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:50, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2026-04', label: 'Abril 2026',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2026-04-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2026-04-15T00:00:00').toISOString(),
     summary: { medicos:1925, odonto:1188, enfermeria:8525, rehab:1640, mental:1205, nutri:419 },
+    gender: { h:4736, m:10166 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_caucel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -889,13 +933,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:115, odonto:63, enfermeria:235, rehab:0, mental:33, nutri:20 },
       xoclan_carmelitas: { medicos:33, odonto:0, enfermeria:131, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:58, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:50, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:50, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2026-05', label: 'Mayo 2026',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2026-05-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2026-05-15T00:00:00').toISOString(),
     summary: { medicos:2012, odonto:1125, enfermeria:9650, rehab:2380, mental:1269, nutri:959 },
+    gender: { h:6070, m:11325 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_caucel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -942,13 +987,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:116, odonto:64, enfermeria:607, rehab:0, mental:26, nutri:17 },
       xoclan_carmelitas: { medicos:45, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:46, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:50, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:50, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2026-06', label: 'Junio 2026',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2026-06-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2026-06-15T00:00:00').toISOString(),
     summary: { medicos:2696, odonto:1103, enfermeria:5056, rehab:1990, mental:1253, nutri:1126 },
+    gender: { h:4390, m:8834 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_caucel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -995,13 +1041,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:81, odonto:69, enfermeria:0, rehab:0, mental:15, nutri:9 },
       xoclan_carmelitas: { medicos:74, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:66, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:49, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:49, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2026-07', label: 'Julio 2026',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2026-07-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2026-07-15T00:00:00').toISOString(),
     summary: { medicos:2473, odonto:1254, enfermeria:4649, rehab:2109, mental:1768, nutri:1172 },
+    gender: { h:4366, m:9059 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_caucel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
@@ -1048,13 +1095,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:106, odonto:49, enfermeria:99, rehab:0, mental:36, nutri:5 },
       xoclan_carmelitas: { medicos:23, odonto:0, enfermeria:163, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:60, enfermeria:30, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:63, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:63, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
     period: '2026-08', label: 'Agosto 2026',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2026-08-15T00:00:00').toISOString(),
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2026-08-15T00:00:00').toISOString(),
     summary: { medicos:2009, odonto:1212, enfermeria:12232, rehab:2043, mental:1358, nutri:0 },
+    gender: { h:6256, m:12598 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_caucel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:136, nutri:0 },
@@ -1101,13 +1149,14 @@ const INITIAL_PERIODS = [
       vergel: { medicos:138, odonto:93, enfermeria:470, rehab:0, mental:26, nutri:0 },
       xoclan_carmelitas: { medicos:59, odonto:0, enfermeria:112, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:94, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:57, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:57, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
   },
   {
-    period: '2026-09', label: 'Septiembre 2026 (parcial)',
-    uploadedBy: 'Datos oficiales (Excel MODULOS2025)', uploadedAt: new Date('2026-09-15T00:00:00').toISOString(),
+    period: '2026-09', label: 'Septiembre 2026 (parcial)', partial: true,
+    uploadedBy: 'Datos oficiales (Excel MODULOS2025_2)', uploadedAt: new Date('2026-09-15T00:00:00').toISOString(),
     summary: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:1423, nutri:0 },
+    gender: { h:500, m:923 },
     modules: {
       aguilas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       almanova_caucel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:201, nutri:0 },
@@ -1154,10 +1203,20 @@ const INITIAL_PERIODS = [
       vergel: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:17, nutri:0 },
       xoclan_carmelitas: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
       xoclan_susula_dental: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
-      xoclan_susula_vesp: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 },
+      xoclan_susula_vesp: { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 }
     }
-  },
+  }
 ];
+
+/* ACUMULADO DE LA ADMINISTRACIÓN (hoja "2024-2027" del Excel):
+   del 1 de septiembre de 2024 al corte de septiembre de 2026. */
+const ACCUMULATED = {
+  from: '1 de septiembre de 2024', to: 'septiembre de 2026',
+  summary: { medicos:59151, odonto:29326, enfermeria:200384, rehab:36584, mental:28682, nutri:20826 },
+  gender: { h:125818, m:249135 },
+  total: 374953,
+  byYear: { 2024: 55824, 2025: 194063, 2026: 126402 }  // 2024 = sept-dic · 2026 = ene-sept (corte)
+};
 
 /* TEMAS PRIORITARIOS (concentrado al 31 de marzo de 2026) */
 const PRIORITY_DATA = {
