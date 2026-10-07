@@ -504,11 +504,12 @@ function renderHeroFacts(cur, s, total){
 /* Lista accionable: módulos activos que no reportaron nada en el mes */
 function renderIdleModules(cur){
   const ul = $('#idleList'); if(!ul) return;
+  const t = $('#idleTitle'); if(t) t.textContent = cur.virtual ? 'Módulos activos sin registros en el período' : 'Módulos activos sin registros este mes';
   const idle = MODULES.filter(m => m.status === 'ACTIVO' && moduleTotal(cur.modules && cur.modules[m.id]) === 0);
   $('#idleCount').textContent = idle.length ? String(idle.length) : '';
   ul.innerHTML = idle.length
     ? idle.map(m => `<li><span class="idle-name">${m.name}</span><span class="idle-colony">${m.colony || ''}</span></li>`).join('')
-    : '<li class="idle-empty">Todos los módulos activos reportaron atenciones este mes.</li>';
+    : `<li class="idle-empty">Todos los módulos activos reportaron atenciones ${cur.virtual ? 'en el período' : 'este mes'}.</li>`;
 }
 
 function renderSparkline(){
