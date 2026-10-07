@@ -7,15 +7,19 @@ Dashboard interactivo, animado y responsivo para visualizar la productividad de 
 
 ## ✨ Características
 
-- 🔐 **Login con 4 usuarios** (Alejandra, Chucho, Sandra, Clarisa)
+- 🔐 **Login con 4 usuarios** (Alejandra, Chucho, Sandra, Clarisa); la sesión se mantiene al recargar hasta cerrar sesión; las contraseñas se guardan como huella SHA-256
 - 🎨 **Logo oficial** de la Dirección integrado (`logo.png` + `logo-icon.png`)
 - 📊 **6 KPI animados** con contadores y comparación contra el mes anterior
 - 🗺️ **Mapa interactivo** con la ubicación de cada módulo en Mérida (Leaflet + OpenStreetMap, **sin API key**) y el mapa "Espacios físicos 2026" de Google My Maps
 - 📈 **Tendencias** legibles: selector de indicador y rango, resumen del período, lectura en lenguaje llano, comparativo año contra año, composición por servicio y tabla mes por mes
-- 📝 **Captura mensual** con barra de progreso para mantener la información al 100%
+- 📝 **Captura mensual** con barra de progreso, y **importación directa del Excel del mes** (misma estructura que MODULOS2025) con validaciones
+- 🚨 **Alertas del mes**: caídas fuertes por servicio o módulo y módulos activos sin reportar
+- 🔎 **Detalle por módulo**: toca cualquier módulo (o el botón del mapa) y ves sus 20 meses, mejor mes y mezcla de servicios
+- 🖨️ **Informe PDF** con el botón "Informe" (Resumen + Tendencias del período elegido)
+- 📲 **Instalable como app** en el celular (PWA) y funciona sin internet para lo ya visto
 - 🌐 **Persistencia local** (LocalStorage) + opción de **sincronización a Google Sheets** vía Apps Script
 - 📥 **Exportar / Importar JSON** de respaldo
-- ⭐ **Temas Prioritarios** (Salud, Mujeres, Salud Mental) ya cargados con datos al 31 de marzo de 2026
+- ⭐ **Temas Prioritarios** (Salud, Mujeres, Salud Mental) con cortes al 31 de marzo y 31 de agosto de 2026, y el avance entre cortes
 - 📅 **21 períodos mensuales reales** precargados (enero 2025 → agosto 2026 completos; septiembre 2026 en captura) extraídos del Excel oficial `MODULOS2025_2`
 - 🎨 **Identidad gráfica oficial** del Manual del Gobierno Municipal de Mérida 2024-2027 (azul `#002C72`, verde `#9DEF0F`/`#74BA47`, tipografía Poppins, lema _"Mérida, contigo es mejor"_)
 - ✨ **Animaciones**: partículas de fondo, splash, transiciones, gráficas animadas
@@ -32,7 +36,7 @@ Dashboard interactivo, animado y responsivo para visualizar la productividad de 
 | Sandra     | `Sandra2026`    |
 | Clarisa    | `Clarisa2026`   |
 
-> 🔒 **Para cambiarlas**: edita el archivo `data.js` → objeto `USERS` y cambia el campo `password` de cada usuaria/o. Después haz `commit + push` en GitHub y los cambios se reflejan inmediatamente.
+> 🔒 **Para cambiarlas**: entra a la app → *Cargar datos* → *Cambiar una contraseña*, escribe la nueva y copia la huella que aparece. Pégala en `data.js` → `USERS` → `passwordHash` de esa usuaria y haz commit. En el repo nunca queda la contraseña en texto.
 
 ---
 
@@ -44,7 +48,10 @@ bienestar-humano/
 ├── styles.css               → Estilos e identidad visual
 ├── data.js                  → Usuarios, módulos, datos iniciales
 ├── app.js                   → Lógica principal (login, charts, mapa, carga)
-├── vendor/                  → Chart.js y Leaflet incluidos (sin CDN)
+├── vendor/                  → Chart.js, Leaflet y SheetJS incluidos (sin CDN)
+├── scripts/                 → Convertir el Excel completo en data.js (uso técnico)
+├── manifest.json · sw.js    → App instalable (PWA)
+├── icons/                   → Íconos de la app
 ├── google-apps-script.gs    → Motor de datos en la nube (opcional)
 ├── logo.png                 → Logo completo (Dirección de Bienestar Humano)
 ├── logo-icon.png            → Logo solo ícono (para topbar y splash)
@@ -151,6 +158,12 @@ Esto permite que **los datos cargados se guarden en una hoja de Google Sheets** 
 
 ## 📝 ¿Cómo cargar la información del mes?
 
+**Opción rápida (recomendada): importar el Excel**
+1. Entra a **"Cargar datos"** y pulsa **"Importar Excel del mes"**; elige el archivo `MODULOS2025` (o el del año que toque).
+2. Elige la hoja del mes (la app propone la más reciente). Verás el total por servicio, hombres/mujeres y los avisos: filas sin nombre, módulos que no reconoce, totales que no cuadran.
+3. Pulsa **"Pasar a la tabla"**, revisa los números y pulsa **"Guardar mes"**.
+
+**Opción manual**
 1. Inicia sesión con tu usuaria
 2. Click en la sección **"Cargar datos"** del menú
 3. Selecciona el **año** y **mes** que estás capturando
@@ -171,7 +184,8 @@ Esto permite que **los datos cargados se guarden en una hoja de Google Sheets** 
 | Contraseñas                  | `data.js` → `USERS`                       |
 | Lista de módulos             | `data.js` → `MODULES`                     |
 | Coordenadas en el mapa       | `data.js` → `MODULES` (`lat`, `lng`)      |
-| Datos del concentrado anual  | `data.js` → `PRIORITY_DATA`               |
+| Temas prioritarios (cortes)  | `data.js` → `PRIORITY_CUTS` / `PRIORITY_THEMES` |
+| Colonias del mapa            | `data.js` → `COLONIAS` (del KMZ oficial)  |
 | Colores                      | `styles.css` → variables `:root`          |
 | Endpoint de Apps Script      | `data.js` → `APPS_SCRIPT_URL`             |
 | Mapa (id de My Maps, llave opcional) | `data.js` → `MAP_CONFIG`          |
@@ -194,11 +208,19 @@ Esto permite que **los datos cargados se guarden en una hoja de Google Sheets** 
 
 ---
 
+## 🗺️ ¿De dónde salen las ubicaciones del mapa?
+
+Del KMZ oficial **"U.H. Municipio Mérida"** (red de calles del Ayuntamiento). De ahí se tomaron las 581 etiquetas de colonias, fraccionamientos y comisarías (`data.js → COLONIAS`) y la ubicación de 33 módulos (`src:'kmz'` en `MODULES`). Los módulos del Centro, las comisarías sin etiqueta (Chichí Suárez, Molas, Sitpach) y los servicios móviles siguen con coordenadas aproximadas: para afinarlos busca la colonia en `COLONIAS` y copia sus coordenadas, o pide las coordenadas exactas al equipo de campo.
+
+Para agregar un corte nuevo de **Temas prioritarios**, copia el último bloque de `PRIORITY_CUTS`, cambia la fecha y actualiza los números: la app calculará sola el avance respecto al corte anterior.
+
+---
+
 ## 📄 Créditos
 
 Desarrollado para la **Dirección de Bienestar Humano · H. Ayuntamiento de Mérida 2024–2027**.
 
-Datos mensuales al 31 de agosto de 2026 (septiembre 2026 en captura). Temas prioritarios al 31 de marzo de 2026.
+Datos mensuales al 31 de agosto de 2026 (septiembre 2026 en captura). Temas prioritarios al 31 de agosto de 2026.
 
 ---
 
@@ -226,3 +248,15 @@ Datos mensuales al 31 de agosto de 2026 (septiembre 2026 en captura). Temas prio
 - **Mapa**: ya no depende de ninguna llave. Capas OpenStreetMap, CARTO y satélite Esri; si OpenStreetMap falla cambia solo. Botón para ver el mapa "Espacios físicos 2026" de Google My Maps. Los módulos que comparten sede (matutino/vespertino) se separan un poco y los servicios sin sede fija (a domicilio, ferias, comisarías) se listan debajo del mapa.
 - **Móvil**: el menú lateral ya se puede usar (el fondo oscuro lo tapaba) y la pantalla ya no se desborda a lo ancho.
 - Todas las reglas visuales nuevas están al final de `styles.css` en el bloque **v4**.
+
+---
+
+## 🆕 Versión 5 · Todo lo que ustedes mismos pueden operar
+
+- **Importar el Excel del mes** desde la app, con validaciones (ya no hace falta que alguien convierta el archivo).
+- **Temas prioritarios** actualizados al 31 de agosto de 2026 y rediseñados: cifra principal por tema, grupos con barras, proporción de mujeres frente al total y avance desde el corte anterior.
+- **Alertas del mes** en el Resumen y **detalle por módulo** con su historia completa.
+- **Informe PDF** con un botón; **sesión que se mantiene** al recargar; **contraseñas como huella** (no en texto).
+- **Mapa**: ubicaciones de 33 módulos tomadas del KMZ oficial y capa de colonias/comisarías que aparece al acercar.
+- **App instalable** (PWA) y sin dependencias externas; `mobile.html` (versión vieja) se eliminó.
+- El motor de Google Apps Script ya no crea una hoja nueva en cada llamada (guarda el id de la hoja).

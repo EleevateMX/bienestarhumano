@@ -31,11 +31,21 @@
 const SHEET_NAME = 'BienestarHumano_DB';
 
 function getOrCreateSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.create('BienestarHumano_DB');
+  // En un proyecto independiente no hay "hoja activa": se guarda el id de la
+  // hoja creada la primera vez para no crear un archivo nuevo en cada llamada.
+  const props = PropertiesService.getScriptProperties();
+  let ss = null;
+  const savedId = props.getProperty('BH_SPREADSHEET_ID');
+  if (savedId) { try { ss = SpreadsheetApp.openById(savedId); } catch (_) { ss = null; } }
+  if (!ss) {
+    ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.create('BienestarHumano_DB');
+    props.setProperty('BH_SPREADSHEET_ID', ss.getId());
+  }
   let sh = ss.getSheetByName(SHEET_NAME);
   if (!sh) {
     sh = ss.insertSheet(SHEET_NAME);
     sh.getRange(1, 1, 1, 5).setValues([['period','label','uploadedBy','uploadedAt','data']]);
+    Logger.log('Hoja creada: ' + ss.getUrl());
     sh.setFrozenRows(1);
   }
   return sh;
@@ -83,7 +93,7 @@ function savePeriod_(payload) {
   const last = sh.getLastRow();
   const existing = last >= 2 ? sh.getRange(2, 1, last - 1, 1).getValues() : [];
   const idx = existing.findIndex(r => r[0] === payload.period);
-  const dataStr = JSON.stringify({ modules: payload.modules || {}, summary: payload.summary || {} });
+  const dataStr = JSON.stringify({ modules: payload.modules || {}, summary: payload.summary || {}, gender: payload.gender || null });
   const row = [payload.period, payload.label || '', payload.uploadedBy || '', payload.uploadedAt || new Date().toISOString(), dataStr];
 
   if (idx >= 0) {

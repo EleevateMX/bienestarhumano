@@ -200,8 +200,9 @@ function initLogin(){
     const user = STATE.selectedUser;
     const pass = $('#password').value.trim();
     if(!user){ $('#loginError').textContent = 'Selecciona un usuario'; return; }
-    if(USERS[user] && USERS[user].password === pass){
+    if(USERS[user] && checkPassword(USERS[user], pass)){
       STATE.currentUser = user;
+      try{ localStorage.setItem(SESSION_KEY, user); }catch(_){}
       $('#login').classList.add('hidden');
       $('#app').classList.remove('hidden');
       onLoggedIn();
@@ -215,13 +216,65 @@ function initLogin(){
   $('#password').addEventListener('input', () => $('#loginError').textContent = '');
 }
 
-function onLoggedIn(){
+/* Sesión persistente: la usuaria sigue dentro al recargar hasta que pulse "Cerrar sesión". */
+const SESSION_KEY = 'bh_merida_session';
+function restoreSession(){
+  let user = null;
+  try{ user = localStorage.getItem(SESSION_KEY); }catch(_){}
+  if(!user || !USERS[user]) return false;
+  STATE.currentUser = user;
+  $('#login').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  onLoggedIn(true);
+  return true;
+}
+
+/* Contraseñas: se compara la huella SHA-256 (passwordHash). Si data.js aún
+   trae `password` en texto (versión vieja), también se acepta. */
+function checkPassword(u, pass){
+  if(u.password !== undefined) return u.password === pass;
+  return sha256Hex(pass) === String(u.passwordHash || '').toLowerCase();
+}
+
+/* SHA-256 en JS puro (funciona también abriendo el archivo sin servidor, donde crypto.subtle no está). */
+function sha256Hex(str){
+  const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const bytes = new TextEncoder().encode(str);
+  const l = bytes.length, padLen = ((l + 9 + 63) >> 6) << 6;
+  const buf = new Uint8Array(padLen); buf.set(bytes); buf[l] = 0x80;
+  const dv = new DataView(buf.buffer); dv.setUint32(padLen - 4, (l * 8) >>> 0); dv.setUint32(padLen - 8, Math.floor(l * 8 / 4294967296));
+  let H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const W = new Uint32Array(64);
+  const rotr = (x,n) => (x >>> n) | (x << (32 - n));
+  for(let off = 0; off < padLen; off += 64){
+    for(let i = 0; i < 16; i++) W[i] = dv.getUint32(off + i*4);
+    for(let i = 16; i < 64; i++){
+      const s0 = rotr(W[i-15],7) ^ rotr(W[i-15],18) ^ (W[i-15] >>> 3);
+      const s1 = rotr(W[i-2],17) ^ rotr(W[i-2],19) ^ (W[i-2] >>> 10);
+      W[i] = (W[i-16] + s0 + W[i-7] + s1) >>> 0;
+    }
+    let [a,b,c,d,e,f,g,h] = H;
+    for(let i = 0; i < 64; i++){
+      const S1 = rotr(e,6) ^ rotr(e,11) ^ rotr(e,25);
+      const ch = (e & f) ^ (~e & g);
+      const t1 = (h + S1 + ch + K[i] + W[i]) >>> 0;
+      const S0 = rotr(a,2) ^ rotr(a,13) ^ rotr(a,22);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const t2 = (S0 + maj) >>> 0;
+      h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+    }
+    H = H.map((v, i) => (v + [a,b,c,d,e,f,g,h][i]) >>> 0);
+  }
+  return H.map(v => v.toString(16).padStart(8,'0')).join('');
+}
+
+function onLoggedIn(restored){
   const u = USERS[STATE.currentUser];
   $('#userName').textContent = u.name;
   $('#userAvatar').textContent = u.name[0];
   $('#userAvatar').style.background = `linear-gradient(135deg, ${u.color}, ${u.color}dd)`;
   $('#loadAuthor').value = u.name;
-  toast(`Hola, ${u.name}`, 'success');
+  if(!restored) toast(`Hola, ${u.name}`, 'success');
   refreshAll();
 }
 
@@ -270,6 +323,7 @@ function initNav(){
 
   // logout
   $('#logoutBtn').addEventListener('click', () => {
+    try{ localStorage.removeItem(SESSION_KEY); }catch(_){}
     STATE.currentUser = null;
     STATE.selectedUser = null;
     $('#password').value = '';
@@ -469,6 +523,7 @@ function renderOverview(){
   }
 
   renderSparkline(s);
+  renderAlerts(cur, prev);
   renderTopChart(cur);
   renderGenderChart(cur);
   renderStatusChart(cur);
@@ -671,6 +726,9 @@ function renderModules(){
     const total = (m.medicos||0)+(m.odonto||0)+(m.enfermeria||0)+(m.rehab||0)+(m.mental||0)+(m.nutri||0);
     const card = document.createElement('div');
     card.className = `module-card status-${mod.status}`;
+    card.tabIndex = 0; card.setAttribute('role','button'); card.title = 'Ver historia del módulo';
+    card.addEventListener('click', () => openModuleModal(mod.id));
+    card.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openModuleModal(mod.id); } });
     card.innerHTML = `
       <div class="module-head">
         <div class="module-name">${mod.name}<br><small class="muted" style="font-weight:500">${mod.colony||''}</small></div>
@@ -748,7 +806,37 @@ function initMap(){
   L.control.scale({ imperial:false, position:'bottomleft' }).addTo(map);
 
   STATE.map = map;
+  initColoniasLayer(map);
   drawMapMarkers();
+}
+
+/* Capa de colonias, fraccionamientos y comisarías (etiquetas del KMZ oficial).
+   Se muestra a partir del zoom 13 para no saturar; se puede apagar con la casilla. */
+function initColoniasLayer(map){
+  if(typeof COLONIAS === 'undefined' || !COLONIAS.length) return;
+  // Tres capas escalonadas por zoom para no saturar: comisarías/zonas (13+), colonias (14+), fraccionamientos (15+)
+  const layers = { com: L.layerGroup(), col: L.layerGroup(), fracc: L.layerGroup() };
+  const minZoom = { com: 13, col: 14, fracc: 15 };
+  const pretty = (n) => n.replace(/^(F\.|C\.|FRACC\.)\s*/, '').replace(/\s+/g,' ').trim();
+  COLONIAS.forEach(([name, lat, lng]) => {
+    const kind = /^F/.test(name) ? 'fracc' : /^C\./.test(name) ? 'col' : 'com';
+    L.marker([lat, lng], {
+      icon: L.divIcon({ className:'', html:`<span class="colonia-lbl ${kind}">${pretty(name)}</span>`, iconSize:[0,0], iconAnchor:[0,0] }),
+      interactive: false, keyboard: false
+    }).addTo(layers[kind]);
+  });
+  const toggle = $('#kmlToggle');
+  const sync = () => {
+    const on = toggle ? toggle.checked : true;
+    Object.keys(layers).forEach(k => {
+      const visible = on && map.getZoom() >= minZoom[k];
+      if(visible && !map.hasLayer(layers[k])) layers[k].addTo(map);
+      if(!visible && map.hasLayer(layers[k])) map.removeLayer(layers[k]);
+    });
+  };
+  map.on('zoomend', sync);
+  if(toggle){ toggle.closest('label').classList.remove('hidden'); toggle.addEventListener('change', sync); }
+  sync();
 }
 
 /* Alterna entre el mapa de módulos (Leaflet) y el mapa "Espacios físicos 2026"
@@ -820,6 +908,7 @@ function drawMapMarkers(){
       <div class="popup-row"><span>🦴 Rehabilitación</span><strong>${fmt(m.rehab)}</strong></div>
       <div class="popup-row"><span>🧠 Salud Mental</span><strong>${fmt(m.mental)}</strong></div>
       <div class="popup-row popup-total"><span>Total</span><span>${fmt(total)}</span></div>
+      <button class="popup-btn" onclick="window.bhOpenModule && window.bhOpenModule('${mod.id}')">Ver historia del módulo</button>
     `);
     marker.on('click', () => {
       $('#mapInfo').innerHTML = `
@@ -1229,6 +1318,8 @@ function renderDataLoader(){
     $('#clearDataBtn').addEventListener('click', () => {
       $$('#dataTableBody input').forEach(i => i.value = 0);
       $$('#dataTableBody [data-total]').forEach(t => t.textContent = '0');
+      $$('#dataTableBody tr').forEach(tr => { delete tr.dataset.h; delete tr.dataset.m; });
+      $('#loadH').value = ''; $('#loadM').value = '';
       updateLoaderProgress();
     });
     $('#exportBtn').addEventListener('click', exportData);
@@ -1263,16 +1354,19 @@ async function saveCurrentData(){
     const id = tr.dataset.id;
     const obj = {};
     tr.querySelectorAll('input').forEach(inp => obj[inp.dataset.svc] = +inp.value || 0);
+    if(tr.dataset.h !== undefined && tr.dataset.h !== ''){ obj.h = +tr.dataset.h || 0; obj.m = +tr.dataset.m || 0; }
     modulesData[id] = obj;
   });
   const summary = aggregateModuleSummary(modulesData);
+  const gh = +$('#loadH').value || 0, gm = +$('#loadM').value || 0;
 
   const newPeriod = {
     period, label,
     uploadedBy: USERS[STATE.currentUser].name,
     uploadedAt: new Date().toISOString(),
     modules: modulesData,
-    summary
+    summary,
+    gender: (gh + gm) > 0 ? { h: gh, m: gm } : undefined
   };
 
   // Reemplaza si ya existía ese período
@@ -1371,15 +1465,79 @@ function importData(e){
    TEMAS PRIORITARIOS
    ============================================================ */
 function renderPriority(){
-  const fill = (selId, items) => {
-    const ul = $(selId);
-    ul.innerHTML = items.map(it => `
-      <li><span class="lbl">${it.lbl}</span><span class="num">${fmt(it.num)}</span></li>
-    `).join('');
+  const grid = $('#priGrid'); if(!grid || typeof PRIORITY_CUTS === 'undefined') return;
+  const cuts = PRIORITY_CUTS.slice().sort((a,b) => a.asOf.localeCompare(b.asOf));
+  const cur = cuts[cuts.length-1], prev = cuts[cuts.length-2] || null;
+  const showDelta = $('#priDelta') ? $('#priDelta').checked : true;
+  const v = (k) => (cur.values[k] ?? null);
+  const pv = (k) => (prev ? (prev.values[k] ?? null) : null);
+  const delta = (k) => { const a = v(k), b = pv(k); return (a === null || b === null) ? null : a - b; };
+  const deltaChip = (k) => {
+    if(!showDelta || !prev) return '';
+    const d = delta(k); if(d === null) return '';
+    if(d === 0) return `<span class="pri-delta flat" title="Sin cambio desde el corte anterior">sin cambio</span>`;
+    return `<span class="pri-delta ${d > 0 ? 'up' : 'down'}" title="Desde el ${prev.label}">${d > 0 ? '+' : '−'}${fmt(Math.abs(d))}</span>`;
   };
-  fill('#priSalud', PRIORITY_DATA.salud);
-  fill('#priMujeres', PRIORITY_DATA.mujeres);
-  fill('#priMental', PRIORITY_DATA.mental);
+  const ratioChip = (it) => {
+    if(!it.ratio) return '';
+    const a = v(it.key), b = v(it.ratio);
+    if(!a || !b) return '';
+    return `<span class="pri-ratio" title="Proporción del total de ${it.lbl.toLowerCase()} que fueron mujeres">${Math.round(a / b * 100)} % del total</span>`;
+  };
+  const daysBetween = prev ? Math.round((new Date(cur.asOf) - new Date(prev.asOf)) / 86400000) : 0;
+
+  $('#priSub').textContent = `Acumulado del 1 de septiembre de 2024 al ${cur.label}${prev ? ` · comparado con el corte del ${prev.label}` : ''}`;
+  $('#priDelta').closest('label').classList.toggle('hidden', !prev);
+
+  // Franja superior: los tres números que resumen la administración
+  const strip = [
+    { lbl:'Atenciones médicas', key:'sal_total', color:'#002C72' },
+    { lbl:'Detecciones y atenciones de enfermería', key:'sal_enf', color:'#74BA47' },
+    { lbl:'Consultas médicas a mujeres', key:'muj_mod', color:'#F44C7F' },
+    { lbl:'Personas atendidas en Alma Nova', key:'men_personas', color:'#006AFF' }
+  ];
+  $('#priStrip').innerHTML = strip.map(x => {
+    const d = delta(x.key);
+    const perMonth = (showDelta && prev && d !== null && daysBetween > 0) ? `<small>≈ ${fmt(Math.round(d / (daysBetween / 30.44)))} al mes desde ${prev.label.replace(/^\d+ de /, '')}</small>` : '';
+    return `<div class="pri-kpi" style="--c:${x.color}"><div class="pri-kpi-lbl">${x.lbl}</div><div class="pri-kpi-val">${fmt(v(x.key))}</div><div class="pri-kpi-foot">${deltaChip(x.key)}${perMonth}</div></div>`;
+  }).join('');
+
+  grid.innerHTML = PRIORITY_THEMES.map(t => {
+    const h = t.headline;
+    const headRatio = h.ratio && v(h.ratio) ? `<span class="pri-ratio">${Math.round(v(h.key) / v(h.ratio) * 100)} % de las consultas en módulos</span>` : '';
+    const groups = t.groups.map(g => {
+      const items = g.items;
+      if(g.kind === 'facts'){
+        return `<div class="pri-group"><h4>${g.title}</h4><div class="pri-facts">${items.map(it => `
+          <div class="pri-fact"><strong>${fmt(v(it.key))}</strong><span>${it.lbl}</span>${it.note ? `<small>${it.note}</small>` : ''}${deltaChip(it.key)}</div>`).join('')}</div></div>`;
+      }
+      const max = Math.max(...items.filter(it => !it.sub).map(it => v(it.key) || 0), 1);
+      return `<div class="pri-group"><h4>${g.title}</h4><ul class="pri-list">${items.map(it => {
+        const val = v(it.key);
+        const w = Math.max(2, Math.round((val || 0) / max * 100));
+        return `<li class="${it.sub ? 'is-sub' : ''}${it.strong ? ' is-strong' : ''}">
+          <div class="pri-row"><span class="pri-lbl">${it.lbl}</span><span class="pri-num">${fmt(val)}</span></div>
+          ${it.sub ? '' : `<div class="pri-bar"><span style="width:${w}%;background:${t.color}"></span></div>`}
+          <div class="pri-meta">${ratioChip(it)}${deltaChip(it.key)}</div>
+        </li>`;
+      }).join('')}</ul></div>`;
+    }).join('');
+    return `<article class="pri-card" style="--c:${t.color}">
+      <header class="pri-head">
+        <div class="pri-icon">${t.icon}</div>
+        <div><h3>${t.title}</h3></div>
+      </header>
+      <div class="pri-headline">
+        <div class="pri-headline-val">${fmt(v(h.key))}</div>
+        <div class="pri-headline-lbl">${h.lbl}${h.note ? `<small>${h.note}</small>` : ''}</div>
+        <div class="pri-headline-meta">${headRatio}${deltaChip(h.key)}</div>
+      </div>
+      ${groups}
+    </article>`;
+  }).join('');
+
+  const chk = $('#priDelta');
+  if(chk && !chk.dataset.bound){ chk.dataset.bound = '1'; chk.addEventListener('change', renderPriority); }
 }
 
 /* ============================================================
@@ -1404,6 +1562,306 @@ function refreshAll(){
   if(STATE.map) drawMapMarkers();
 }
 
+
+/* ============================================================
+   ALERTAS DEL MES
+   ============================================================ */
+function renderAlerts(cur, prev){
+  const ul = $('#alertList'), count = $('#alertCount'); if(!ul) return;
+  const alerts = [];
+  if(cur.virtual){
+    ul.innerHTML = '<li class="alert-ok">Las alertas se calculan mes a mes. Elige un mes en el selector de período.</li>';
+    count.textContent = ''; return;
+  }
+  const s = periodSummary(cur);
+  if(prev){
+    const sp = periodSummary(prev);
+    // 1. Servicios con caída fuerte
+    SERVICE_DEFS.forEach(d => {
+      const a = s[d.key] || 0, b = sp[d.key] || 0;
+      if(b >= 100 && a < b * 0.7) alerts.push({ lvl:'high', txt:`<strong>${d.label}</strong> cayó ${Math.round((1 - a/b)*100)} % respecto a ${longLabel(prev).toLowerCase()} (${fmt(b)} → ${fmt(a)}).` });
+      if(b >= 100 && a === 0) alerts[alerts.length-1].txt = `<strong>${d.label}</strong> no tiene registros este mes (el mes anterior tuvo ${fmt(b)}). ¿Faltó capturar?`;
+    });
+    // 2. Módulos con caída fuerte
+    MODULES.forEach(mod => {
+      if(mod.status === 'CERRADO') return;
+      const a = moduleTotal(cur.modules && cur.modules[mod.id]), b = moduleTotal(prev.modules && prev.modules[mod.id]);
+      if(b >= 80 && a > 0 && a < b * 0.6) alerts.push({ lvl:'mid', txt:`<strong>${mod.name}</strong> bajó ${Math.round((1 - a/b)*100)} % (${fmt(b)} → ${fmt(a)}).` });
+    });
+  }
+  // 3. Módulos activos sin reportar dos meses seguidos
+  const idx = STATE.periods.findIndex(p => p.period === cur.period);
+  const prev2 = idx > 1 ? STATE.periods[idx-2] : null;
+  if(prev){
+    MODULES.forEach(mod => {
+      if(mod.status !== 'ACTIVO') return;
+      const z = [cur, prev, prev2].filter(Boolean).map(p => moduleTotal(p.modules && p.modules[mod.id]) === 0);
+      if(z[0] && z[1]) alerts.push({ lvl: z[2] ? 'high' : 'mid', txt:`<strong>${mod.name}</strong> lleva ${z[2] ? 'tres' : 'dos'} meses sin reportar atenciones.` });
+    });
+  }
+  // 4. Sexo no cuadra con el total
+  if(cur.gender && (cur.gender.h + cur.gender.m) !== SUM_TOTAL(s)){
+    alerts.push({ lvl:'low', txt:`La suma de hombres y mujeres (${fmt(cur.gender.h + cur.gender.m)}) no coincide con el total de atenciones (${fmt(SUM_TOTAL(s))}).` });
+  }
+  const order = { high:0, mid:1, low:2 };
+  alerts.sort((a,b) => order[a.lvl] - order[b.lvl]);
+  count.textContent = alerts.length ? String(alerts.length) : '';
+  ul.innerHTML = alerts.length
+    ? alerts.map(a => `<li class="alert-${a.lvl}">${a.txt}</li>`).join('')
+    : '<li class="alert-ok">Sin alertas: ningún servicio ni módulo muestra caídas fuertes ni meses sin captura.</li>';
+}
+
+/* ============================================================
+   DETALLE DE MÓDULO (modal)
+   ============================================================ */
+function initModuleModal(){
+  const modal = $('#moduleModal'); if(!modal) return;
+  modal.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', closeModuleModal));
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && !modal.classList.contains('hidden')) closeModuleModal(); });
+  window.bhOpenModule = openModuleModal;
+}
+function closeModuleModal(){
+  $('#moduleModal').classList.add('hidden');
+  document.body.classList.remove('modal-open');
+}
+function openModuleModal(id){
+  const mod = MODULES.find(m => m.id === id); if(!mod) return;
+  const modal = $('#moduleModal');
+  modal.classList.remove('hidden'); document.body.classList.add('modal-open');
+  $('#mmTitle').textContent = mod.name;
+  const statusTxt = { ACTIVO:'Activo', RECONV:'Reconvertido', CERRADO:'Cerrado' }[mod.status] || mod.status;
+  $('#mmSub').textContent = `${mod.colony || ''} · ${statusTxt}${mod.src === 'kmz' ? ' · ubicación del KMZ oficial' : ''}`;
+
+  const rows = STATE.periods.filter(p => !isPartialPeriod(p)).sort((a,b) => a.period.localeCompare(b.period));
+  const vals = rows.map(p => moduleTotal(p.modules && p.modules[id]));
+  const withData = vals.filter(v => v > 0);
+  const total = sum(vals);
+  let bestIdx = -1; vals.forEach((v,i) => { if(bestIdx < 0 || v > vals[bestIdx]) bestIdx = i; });
+  const last = rows[rows.length-1], prev = rows[rows.length-2];
+  const lastV = vals[vals.length-1], prevV = vals[vals.length-2];
+  const d = prev ? pct(lastV, prevV) : null;
+  const mix = { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 };
+  rows.forEach(p => { const m = (p.modules && p.modules[id]) || {}; Object.keys(mix).forEach(k => mix[k] += m[k] || 0); });
+  const topSvc = SERVICE_DEFS.slice().sort((a,b) => mix[b.key] - mix[a.key])[0];
+  $('#mmStats').innerHTML = [
+    { lbl:'Acumulado', val: fmt(total), cap:`${withData.length} meses con registros` },
+    { lbl:'Promedio mensual', val: fmt(withData.length ? Math.round(total / withData.length) : 0), cap:'en meses con registros' },
+    { lbl:'Mejor mes', val: bestIdx >= 0 && vals[bestIdx] > 0 ? fmt(vals[bestIdx]) : '—', cap: bestIdx >= 0 && vals[bestIdx] > 0 ? longLabel(rows[bestIdx]) : '' },
+    { lbl: last ? longLabel(last) : 'Último mes', val: fmt(lastV || 0), cap: d === null ? '' : `${fmtPct(d)} vs ${prev ? longLabel(prev).split(' ')[0].toLowerCase() : 'mes anterior'}`, cls: d === null ? '' : d > 0 ? 'up' : d < 0 ? 'down' : 'flat' }
+  ].map(t => `<div class="stat ${t.cls || ''}"><div class="stat-lbl">${t.lbl}</div><div class="stat-val">${t.val}</div><div class="stat-cap">${t.cap}</div></div>`).join('');
+  $('#mmRange').textContent = rows.length ? `${longLabel(rows[0])} → ${longLabel(last)}` : '';
+
+  if(typeof Chart === 'undefined') return;
+  const color = topSvc ? topSvc.color : '#002C72';
+  if(STATE.charts.mm) STATE.charts.mm.destroy();
+  STATE.charts.mm = new Chart($('#mmChart').getContext('2d'), {
+    type:'bar',
+    data:{ labels: rows.map(shortLabel), datasets: SERVICE_DEFS.map(dd => ({
+      label: dd.label, data: rows.map(p => ((p.modules && p.modules[id]) || {})[dd.key] || 0),
+      backgroundColor: dd.color, borderRadius: 2, maxBarThickness: 28
+    })) },
+    options:{ responsive:true, maintainAspectRatio:false, animation:{ duration: 700 },
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:8, font:{ size:11 } } }, valueLabels:{ enabled:false },
+        tooltip:{ callbacks:{ title:(it) => longLabel(rows[it[0].dataIndex]), footer:(it) => ' Total: ' + fmt(vals[it[0].dataIndex]) } } },
+      scales:{ x:{ stacked:true, grid:{ display:false }, ticks:{ maxRotation:0, autoSkip:true, font:{ size:11 } } }, y:{ stacked:true, beginAtZero:true, grid:{ color:'#EDF2F7' }, ticks:{ callback:v => fmt(v), font:{ size:11 } } } } }
+  });
+  if(STATE.charts.mmMix) STATE.charts.mmMix.destroy();
+  const mixDefs = SERVICE_DEFS.filter(dd => mix[dd.key] > 0);
+  STATE.charts.mmMix = new Chart($('#mmMixChart').getContext('2d'), {
+    type:'doughnut',
+    data:{ labels: mixDefs.map(dd => dd.label), datasets:[{ data: mixDefs.map(dd => mix[dd.key]), backgroundColor: mixDefs.map(dd => dd.color), borderColor:'#fff', borderWidth:2 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'62%', animation:{ duration: 700 },
+      plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:8, font:{ size:11 } } }, valueLabels:{ enabled:false },
+        tooltip:{ callbacks:{ label:(c) => ` ${c.label}: ${fmt(c.parsed)} (${total ? Math.round(c.parsed/total*100) : 0} %)` } } } }
+  });
+}
+
+/* ============================================================
+   INFORME (impresión → PDF)
+   ============================================================ */
+function initPrint(){
+  const btn = $('#printBtn'); if(!btn) return;
+  btn.addEventListener('click', () => {
+    const cur = currentPeriod();
+    const u = USERS[STATE.currentUser];
+    const hoy = new Date().toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' });
+    $('#printHeader').innerHTML = `
+      <img src="logo.png" alt="" class="print-logo" />
+      <div>
+        <div class="print-title">Indicadores de Bienestar Humano · ${cur.label}</div>
+        <div class="print-meta">Dirección de Bienestar Humano · H. Ayuntamiento de Mérida 2024-2027 · Generado el ${hoy}${u ? ' por ' + u.name : ''}</div>
+      </div>`;
+    // Imprime el Resumen y las Tendencias del período seleccionado.
+    // Mientras dura la impresión ambas vistas se muestran en pantalla para que
+    // Chart.js pueda medir los contenedores y dibujar.
+    document.body.classList.add('printing');
+    requestAnimationFrame(() => {
+      renderOverview();
+      renderTrends();
+      setTimeout(() => {
+        Object.values(STATE.charts).forEach(ch => { try{ ch.resize(); }catch(_){} });
+        window.print();
+      }, 600);
+    });
+  });
+  window.addEventListener('afterprint', () => {
+    document.body.classList.remove('printing');
+    setTimeout(() => Object.values(STATE.charts).forEach(ch => { try{ ch.resize(); }catch(_){} }), 100);
+  });
+}
+
+/* ============================================================
+   IMPORTAR EXCEL DEL MES (misma estructura que MODULOS2025)
+   ============================================================ */
+const EXCEL = { wb:null, parsed:null };
+const XL_MONTHS = { ENE:1, ENERO:1, FEB:2, FEBRERO:2, MAR:3, MARZ:3, MARZO:3, ABR:4, ABRL:4, ABRIL:4, MAY:5, MAYO:5, JUN:6, JUNIO:6, JUL:7, JULIO:7, AGO:8, AGOS:8, AGOSTO:8, SEP:9, SEPT:9, SEPTIEMBRE:9, OCT:10, OCTUBRE:10, NOV:11, NOVIEMBRE:11, DIC:12, DICIEMBRE:12 };
+const XL_COLS = { medicos:[2,3,4], odonto:[5,6,7], enfermeria:[8,9,10], rehab:[11,12,13], mental:[15,16,17], nutri:[18,19,20] }; // índices 0-based: H, M, TOTAL
+
+function normName(s){
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
+}
+const XL_ALIASES = {
+  'XOCLAN SUSULA':'xoclan_susula_dental', 'XOCLAN SUSULA MAT':'xoclan_susula_dental', 'XOCLAN SUSULA MATUTINO':'xoclan_susula_dental',
+  'XOCLAN SUSULA VESP':'xoclan_susula_vesp', 'XOCLAN SUSULA VESPERTINO':'xoclan_susula_vesp',
+  'JUAN PABLO':'juan_pablo', 'JUAN PABLO II':'juan_pablo', 'M. CRESCENCIO REJON':'crescencio_rejon', 'CRESCENCIO REJON':'crescencio_rejon',
+  'SANTA ROSA PEDIATRIA':'santa_rosa_ped', 'SARA MENA':'sara_mena', 'COMISARIAS':'comisarias'
+};
+function moduleIdFromName(raw){
+  if(/PEDIATR/i.test(raw)) return 'santa_rosa_ped';
+  const n = normName(raw);
+  if(XL_ALIASES[n]) return XL_ALIASES[n];
+  const byName = MODULES.find(m => normName(m.name) === n);
+  if(byName) return byName.id;
+  // tolerancia: mismo nombre sin "MATUTINO/VESPERTINO" abreviado
+  const n2 = n.replace(/\bMAT\b/, 'MATUTINO').replace(/\bVESP\b/, 'VESPERTINO');
+  const by2 = MODULES.find(m => normName(m.name) === n2);
+  return by2 ? by2.id : null;
+}
+function guessPeriodFromSheet(name){
+  const n = normName(name).replace(/\s+/g, '');
+  const m = n.match(/^([A-Z]+)(\d{2,4})?$/);
+  if(!m || !XL_MONTHS[m[1]]) return null;
+  let y = m[2] ? +m[2] : null;
+  if(y !== null && y < 100) y += 2000;
+  return { month: XL_MONTHS[m[1]], year: y };
+}
+function parseExcelSheet(ws){
+  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:null, raw:true });
+  const num = (v) => (typeof v === 'number' && isFinite(v)) ? Math.round(v) : (typeof v === 'string' && v.trim() !== '' && !isNaN(+v)) ? Math.round(+v) : 0;
+  const modules = {}, warnings = [], unknown = [];
+  let gender = { h:0, m:0 }, totalRow = null;
+  for(let r = 2; r < Math.min(rows.length, 120); r++){
+    const row = rows[r] || [];
+    let raw = row[1];
+    if(raw === null || raw === undefined || String(raw).trim() === ''){
+      const hasTotal = row[23] !== null && row[23] !== undefined && row[24] !== null && row[24] !== undefined;
+      const hasAny = row.slice(2, 21).some(v => num(v) > 0);
+      if(hasTotal){ totalRow = row; break; }
+      if(hasAny && !modules.comisarias){ raw = 'COMISARIAS'; warnings.push(`Fila ${r+1} sin nombre: se tomó como Comisarías.`); }
+      else continue;
+    }
+    if(/^TOTAL/i.test(String(raw).trim())){ totalRow = row; break; }
+    const id = moduleIdFromName(raw);
+    if(!id){ unknown.push(String(raw).trim()); continue; }
+    const m = {}, g = { h:0, m:0 };
+    Object.entries(XL_COLS).forEach(([k, [hi, mi, ti]]) => {
+      const h = num(row[hi]), mm = num(row[mi]); let t = num(row[ti]);
+      if(t === 0 && (h || mm)) t = h + mm;
+      m[k] = t; g.h += h; g.m += mm;
+    });
+    if(g.h + g.m !== SUM_TOTAL(m)) warnings.push(`${String(raw).trim()}: hombres + mujeres (${fmt(g.h + g.m)}) no cuadra con el total (${fmt(SUM_TOTAL(m))}).`);
+    if(modules[id]) warnings.push(`${String(raw).trim()} aparece dos veces; se usó la última fila.`);
+    modules[id] = m; m.h = g.h; m.m = g.m;
+    gender.h += g.h; gender.m += g.m;
+  }
+  if(unknown.length) warnings.unshift(`Módulos no reconocidos (no se cargaron): ${unknown.join(', ')}. Agrégalos en data.js → MODULES o renómbralos en el Excel.`);
+  const summary = aggregateModuleSummary(modules);
+  if(totalRow){
+    const xt = num(totalRow[23]);
+    if(xt && xt !== SUM_TOTAL(summary)) warnings.push(`La fila de totales del Excel dice ${fmt(xt)} y la suma de módulos da ${fmt(SUM_TOTAL(summary))}. Revisa las fórmulas de esa fila.`);
+  }
+  return { modules, summary, gender, warnings, unknown, count: Object.keys(modules).length };
+}
+function initExcelImport(){
+  const input = $('#excelInput'); if(!input) return;
+  input.addEventListener('change', (e) => {
+    const file = e.target.files[0]; if(!file) return;
+    if(typeof XLSX === 'undefined'){ toast('No se pudo cargar el lector de Excel. Recarga la página.', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try{
+        EXCEL.wb = XLSX.read(new Uint8Array(ev.target.result), { type:'array' });
+      }catch(err){ toast('No se pudo leer el archivo. ¿Es un .xlsx?', 'error'); return; }
+      $('#excelFileName').textContent = file.name;
+      const sel = $('#excelSheet'); sel.innerHTML = '';
+      const monthly = EXCEL.wb.SheetNames.filter(n => guessPeriodFromSheet(n));
+      (monthly.length ? monthly : EXCEL.wb.SheetNames).forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
+      // Preselecciona la hoja del mes más reciente (año y mes del nombre de la hoja)
+      if(monthly.length){
+        const rank = (n) => { const g = guessPeriodFromSheet(n); return (g.year || 0) * 100 + g.month; };
+        sel.value = monthly.slice().sort((a,b) => rank(b) - rank(a))[0];
+      }
+      $('#excelPanel').classList.remove('hidden');
+      previewExcelSheet();
+    };
+    reader.readAsArrayBuffer(file);
+    input.value = '';
+  });
+  $('#excelSheet').addEventListener('change', previewExcelSheet);
+  $('#excelClose').addEventListener('click', () => $('#excelPanel').classList.add('hidden'));
+  $('#excelApply').addEventListener('click', applyExcelToTable);
+}
+function previewExcelSheet(){
+  const name = $('#excelSheet').value; if(!EXCEL.wb || !name) return;
+  const parsed = parseExcelSheet(EXCEL.wb.Sheets[name]);
+  EXCEL.parsed = parsed;
+  const g = guessPeriodFromSheet(name);
+  const total = SUM_TOTAL(parsed.summary);
+  const periodTxt = g ? `${MONTHS_LONG[g.month-1]}${g.year ? ' ' + g.year : ' (elige el año abajo)'}` : 'no se reconoce el mes en el nombre de la hoja; elígelo abajo';
+  $('#excelHint').textContent = `Hoja "${name}" → ${periodTxt}`;
+  $('#excelSummary').innerHTML = [
+    { l:'Módulos leídos', v: parsed.count }, { l:'Total de atenciones', v: fmt(total) },
+    ...SERVICE_DEFS.map(d => ({ l: d.label, v: fmt(parsed.summary[d.key]) })),
+    { l:'Hombres / Mujeres', v: `${fmt(parsed.gender.h)} / ${fmt(parsed.gender.m)}` }
+  ].map(x => `<div class="xs"><span>${x.l}</span><strong>${x.v}</strong></div>`).join('');
+  $('#excelWarnings').innerHTML = parsed.warnings.length
+    ? parsed.warnings.map(w => `<li>${w}</li>`).join('')
+    : '<li class="ok">Todo cuadra: sin filas desconocidas ni diferencias de totales.</li>';
+  if(g){ if(g.year){ ensureYearOption(g.year); $('#loadYear').value = g.year; } $('#loadMonth').value = g.month - 1; }
+}
+function ensureYearOption(y){
+  const sel = $('#loadYear');
+  if(![...sel.options].some(o => +o.value === y)){ const o = document.createElement('option'); o.value = y; o.textContent = y; sel.appendChild(o); }
+}
+function applyExcelToTable(){
+  const parsed = EXCEL.parsed; if(!parsed) return;
+  let filled = 0;
+  $$('#dataTableBody tr').forEach(tr => {
+    const m = parsed.modules[tr.dataset.id];
+    tr.querySelectorAll('input').forEach(inp => inp.value = m ? (m[inp.dataset.svc] || 0) : 0);
+    const total = m ? SUM_TOTAL(m) : 0;
+    tr.querySelector('[data-total]').textContent = fmt(total);
+    tr.dataset.h = m ? m.h : ''; tr.dataset.m = m ? m.m : '';
+    if(m) filled++;
+  });
+  $('#loadH').value = parsed.gender.h || ''; $('#loadM').value = parsed.gender.m || '';
+  updateLoaderProgress();
+  $('#excelPanel').classList.add('hidden');
+  toast(`${filled} módulos pasados a la tabla. Revisa y pulsa "Guardar mes".`, 'success');
+  $('#saveDataBtn').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+/* Herramienta para generar la huella de una contraseña nueva */
+function initHashTool(){
+  const btn = $('#hashBtn'); if(!btn) return;
+  btn.addEventListener('click', () => {
+    const v = $('#hashInput').value;
+    if(!v){ $('#hashOut').textContent = 'Escribe una contraseña primero.'; return; }
+    $('#hashOut').textContent = `passwordHash: '${sha256Hex(v)}'`;
+  });
+}
+
 /* ============================================================
    BOOT
    ============================================================ */
@@ -1421,17 +1879,29 @@ async function boot(){
 
   initParticles();
 
-  // Splash → Login
-  setTimeout(() => {
-    $('#splash').style.display = 'none';
-    $('#login').classList.remove('hidden');
-  }, 2900);
-
   initLogin();
   initNav();
   initChartTabs();
   initModuleFilters();
   initMapMode();
+  initModuleModal();
+  initPrint();
+  initExcelImport();
+  initHashTool();
+  registerServiceWorker();
+
+  // Splash → sesión guardada o Login
+  const hadSession = !!(() => { try{ return localStorage.getItem(SESSION_KEY); }catch(_){ return null; } })();
+  setTimeout(() => {
+    $('#splash').style.display = 'none';
+    if(!restoreSession()) $('#login').classList.remove('hidden');
+  }, hadSession ? 900 : 2900);
+}
+
+function registerServiceWorker(){
+  if(!('serviceWorker' in navigator)) return;
+  if(location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
+  navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW no registrado', e));
 }
 
 document.addEventListener('DOMContentLoaded', boot);

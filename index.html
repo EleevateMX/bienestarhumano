@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<meta name="theme-color" content="#0E2A6B" />
+<meta name="theme-color" content="#002C72" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
 <title>Bienestar Humano · Indicadores · Ayuntamiento de Mérida</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +14,7 @@
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=5" />
 <script src="vendor/leaflet/leaflet.js?v=5"></script>
 <script src="vendor/chart.umd.js?v=5"></script>
+<script src="vendor/xlsx.mini.min.js?v=5"></script>
 <!-- Respaldo por si el archivo local no cargó -->
 <script>
   if(typeof Chart === 'undefined') document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"><\/script>');
@@ -150,6 +153,10 @@
         <label>Período</label>
         <select id="periodSelect"></select>
       </div>
+      <button id="printBtn" class="icon-btn print-btn" title="Descargar informe (PDF)" aria-label="Descargar informe">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Informe</span>
+      </button>
       <div class="user-pill" id="userPill">
         <span class="user-pill-avatar" id="userAvatar">A</span>
         <span id="userName">Usuario</span>
@@ -199,6 +206,7 @@
 
   <!-- ============== VISTA: RESUMEN ============== -->
   <section class="view active" id="view-overview">
+    <div class="print-header" id="printHeader" aria-hidden="true"></div>
     <div class="hero">
       <div class="hero-main">
         <h1 class="hero-period" id="heroPeriod">Resumen del mes</h1>
@@ -271,6 +279,11 @@
         <ul class="idle-list" id="idleList"></ul>
       </div>
     </div>
+
+    <div class="chart-card chart-card-full alerts-card">
+      <div class="chart-head"><h3>Alertas del mes</h3><span class="chip-count" id="alertCount"></span></div>
+      <ul class="alert-list" id="alertList"></ul>
+    </div>
   </section>
 
   <!-- ============== VISTA: MÓDULOS ============== -->
@@ -314,6 +327,7 @@
           <span class="lg lg-active"></span><small>Activo</small>
           <span class="lg lg-reconv"></span><small>Reconvertido</small>
           <span class="lg lg-closed"></span><small>Cerrado</small>
+          <label class="check kml-toggle hidden" for="kmlToggle"><input type="checkbox" id="kmlToggle" checked /> Colonias y comisarías</label>
         </div>
       </div>
     </div>
@@ -412,6 +426,11 @@
           <svg viewBox="0 0 24 24" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Exportar JSON
         </button>
+        <label for="excelInput" class="btn-primary btn-excel">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/><path d="M14 2v6h6M9 13l6 6M15 13l-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Importar Excel del mes
+        </label>
+        <input type="file" id="excelInput" accept=".xlsx,.xlsm,.xls" hidden />
         <label for="importInput" class="btn-secondary">
           <svg viewBox="0 0 24 24" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Importar JSON
@@ -437,10 +456,34 @@
             </select>
           </div>
           <div class="form-field">
+            <label>Hombres</label>
+            <input type="number" min="0" id="loadH" placeholder="opcional" />
+          </div>
+          <div class="form-field">
+            <label>Mujeres</label>
+            <input type="number" min="0" id="loadM" placeholder="opcional" />
+          </div>
+          <div class="form-field">
             <label>Cargado por</label>
             <input type="text" id="loadAuthor" readonly />
           </div>
         </div>
+      </div>
+
+      <div class="excel-panel hidden" id="excelPanel">
+        <div class="excel-panel-head">
+          <div>
+            <strong id="excelFileName">archivo.xlsx</strong>
+            <small class="muted" id="excelHint">Elige la hoja del mes que quieres cargar</small>
+          </div>
+          <div class="excel-controls">
+            <select id="excelSheet" aria-label="Hoja del Excel"></select>
+            <button id="excelApply" class="btn-primary">Pasar a la tabla</button>
+            <button id="excelClose" class="btn-ghost">Cerrar</button>
+          </div>
+        </div>
+        <div class="excel-summary" id="excelSummary"></div>
+        <ul class="excel-warnings" id="excelWarnings"></ul>
       </div>
 
       <div class="progress-track">
@@ -482,6 +525,15 @@
       <h3>Histórico cargado</h3>
       <div class="history-list" id="historyList"></div>
     </div>
+
+    <details class="data-load-card tool-card">
+      <summary><h3>Cambiar una contraseña</h3><small class="muted">Las contraseñas ya no se guardan en texto; se guarda su huella (hash). Genera aquí la huella de la nueva contraseña y pégala en <code>data.js → USERS</code>.</small></summary>
+      <div class="hash-tool">
+        <input type="text" id="hashInput" placeholder="Escribe la contraseña nueva" autocomplete="off" />
+        <button id="hashBtn" class="btn-secondary">Generar huella</button>
+        <code id="hashOut" class="hash-out"></code>
+      </div>
+    </details>
   </section>
 
   <!-- ============== VISTA: TEMAS PRIORITARIOS ============== -->
@@ -489,27 +541,36 @@
     <div class="view-head">
       <div>
         <h2>Temas prioritarios</h2>
-        <p class="muted">Acumulado del 1 de septiembre de 2024 al 31 de marzo de 2026</p>
+        <p class="muted" id="priSub">Acumulado desde el 1 de septiembre de 2024</p>
+      </div>
+      <div class="view-tools">
+        <label class="check" for="priDelta"><input type="checkbox" id="priDelta" checked /> Mostrar avance desde el corte anterior</label>
       </div>
     </div>
-
-    <div class="priority-grid">
-      <div class="priority-card priority-salud">
-        <header><h3>Salud</h3><div class="pcicon">🩺</div></header>
-        <ul id="priSalud" class="priority-list"></ul>
-      </div>
-      <div class="priority-card priority-mujeres">
-        <header><h3>Mujeres</h3><div class="pcicon">💗</div></header>
-        <ul id="priMujeres" class="priority-list"></ul>
-      </div>
-      <div class="priority-card priority-mental">
-        <header><h3>Salud mental (Alma Nova)</h3><div class="pcicon">🧠</div></header>
-        <ul id="priMental" class="priority-list"></ul>
-      </div>
-    </div>
+    <div class="pri-strip" id="priStrip"></div>
+    <div class="pri-grid" id="priGrid"></div>
   </section>
 
 </main>
+
+<!-- Detalle de módulo -->
+<div id="moduleModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="mmTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card">
+    <header class="modal-head">
+      <div>
+        <h3 id="mmTitle">Módulo</h3>
+        <p class="muted" id="mmSub"></p>
+      </div>
+      <button class="icon-btn" data-close aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <div class="trend-stats mm-stats" id="mmStats"></div>
+    <div class="chart-card"><div class="chart-head"><h3>Atenciones por mes</h3><span class="chart-sub" id="mmRange"></span></div><div class="chart-body"><canvas id="mmChart"></canvas></div></div>
+    <div class="chart-card"><div class="chart-head"><h3>Qué servicios da</h3><span class="chart-sub">acumulado del histórico</span></div><div class="chart-body mm-mix"><canvas id="mmMixChart"></canvas></div></div>
+  </div>
+</div>
 
 <!-- Toast -->
 <div id="toast" class="toast"></div>

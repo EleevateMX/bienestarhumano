@@ -936,3 +936,153 @@ input, select{ font-family: inherit; }
   .chart-sub{ text-align:left; width:100%; }
   .trend-insight{ font-size:.86rem; }
 }
+
+/* =====================================================================
+   v5 · IMPORTAR EXCEL, ALERTAS, DETALLE DE MÓDULO, INFORME, COLONIAS
+   ===================================================================== */
+
+/* ---------- Botón Informe en la barra ---------- */
+.print-btn{ display:inline-flex; align-items:center; gap:.4rem; width:auto; height:auto; padding:.45rem .8rem; border-radius:99px; border:1px solid var(--border); background: var(--surface); color: var(--brand-blue); font-weight:600; font-size:.82rem; margin-right:.6rem; flex-shrink:0; white-space:nowrap; }
+.topbar-right{ gap:.6rem; }
+/* Durante la impresión, Resumen y Tendencias se muestran juntas también en pantalla */
+body.printing #view-overview, body.printing #view-trends{ display:block !important; }
+body.printing .view:not(#view-overview):not(#view-trends){ display:none !important; }
+.print-btn:hover{ background: var(--surface-2); }
+@media (max-width: 880px){ .print-btn span{ display:none; } .print-btn{ padding:.45rem; margin-right:.3rem; } }
+
+/* ---------- Alertas ---------- */
+.alerts-card{ margin-top:.9rem; }
+.alert-list{ list-style:none; display:grid; gap:.5rem; }
+.alert-list li{ padding:.6rem .8rem; border-radius:10px; border-left:4px solid var(--text-light); background: var(--surface-2); font-size:.88rem; line-height:1.45; }
+.alert-list li strong{ color: var(--brand-blue); font-weight:600; }
+.alert-list li.alert-high{ border-left-color:#C7453A; background:#FFF4F2; }
+.alert-list li.alert-mid{ border-left-color: var(--accent-orange); background:#FFF9EB; }
+.alert-list li.alert-low{ border-left-color: var(--brand-blue-light); background:#EEF5FF; }
+.alert-list li.alert-ok{ border-left-color: var(--brand-green); background: rgba(116,186,71,.1); color: var(--brand-green-dark); font-weight:500; }
+
+/* ---------- Tarjetas de módulo clicables ---------- */
+.module-card{ cursor:pointer; }
+.module-card:focus-visible{ outline:3px solid var(--brand-blue-light); }
+.popup-btn{ display:block; width:100%; margin-top:.6rem; padding:.45rem .6rem; border-radius:8px; background: var(--brand-blue); color:#fff; font-weight:600; font-size:.78rem; }
+
+/* ---------- Modal ---------- */
+.modal{ position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; padding:1rem; }
+.modal-backdrop{ position:absolute; inset:0; background: rgba(0,26,74,.55); backdrop-filter: blur(2px); }
+.modal-card{ position:relative; width:min(960px, 100%); max-height:calc(100vh - 2rem); overflow:auto; background: var(--bg); border-radius:20px; padding:1.2rem; box-shadow: var(--sh-lg); display:grid; gap:.9rem; }
+.modal-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; }
+.modal-head h3{ font-size:1.25rem; font-weight:700; color: var(--brand-blue); }
+.modal-head .icon-btn{ display:grid; place-items:center; width:38px; height:38px; border-radius:50%; background: var(--surface); border:1px solid var(--border); color: var(--text-muted); flex-shrink:0; }
+.mm-stats{ margin-bottom:0; }
+.mm-mix{ height:240px; }
+body.modal-open{ overflow:hidden; }
+@media (max-width: 640px){ .modal{ padding:.5rem; } .modal-card{ padding:.9rem; border-radius:16px; } }
+
+/* ---------- Importar Excel ---------- */
+.btn-excel{ display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; }
+.excel-panel{ margin:0 0 1rem; padding:1rem 1.1rem; border-radius:14px; border:1px solid rgba(116,186,71,.5); background: rgba(116,186,71,.07); }
+.excel-panel-head{ display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+.excel-panel-head strong{ color: var(--brand-blue); display:block; }
+.excel-panel-head small{ display:block; margin-top:.15rem; }
+.excel-controls{ display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+.excel-controls select{ padding:.5rem .7rem; border:1px solid var(--border); border-radius:10px; font-weight:600; background: var(--surface); }
+.excel-summary{ display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:.5rem; margin-top:.9rem; }
+.excel-summary .xs{ background: var(--surface); border:1px solid var(--border-soft); border-radius:10px; padding:.5rem .7rem; display:flex; flex-direction:column; gap:.1rem; }
+.excel-summary .xs span{ font-size:.72rem; color: var(--text-muted); }
+.excel-summary .xs strong{ color: var(--brand-blue); font-variant-numeric: tabular-nums; }
+.excel-warnings{ list-style:none; margin-top:.8rem; display:grid; gap:.35rem; }
+.excel-warnings li{ font-size:.82rem; padding:.45rem .7rem; border-radius:8px; background:#FFF9EB; border-left:3px solid var(--accent-orange); }
+.excel-warnings li.ok{ background: rgba(116,186,71,.12); border-left-color: var(--brand-green); color: var(--brand-green-dark); }
+.form-field input[type=number]{ padding:.55rem .7rem; border:1px solid var(--border); border-radius:10px; font-size:.9rem; width:120px; }
+
+/* ---------- Herramienta de contraseña ---------- */
+.tool-card summary{ cursor:pointer; list-style:none; display:flex; flex-direction:column; gap:.2rem; }
+.tool-card summary::-webkit-details-marker{ display:none; }
+.tool-card summary h3{ font-size:1rem; color: var(--brand-blue); }
+.tool-card summary h3::before{ content:'▸ '; color: var(--text-light); }
+.tool-card[open] summary h3::before{ content:'▾ '; }
+.hash-tool{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; margin-top:.9rem; }
+.hash-tool input{ flex:1 1 220px; padding:.55rem .7rem; border:1px solid var(--border); border-radius:10px; }
+.hash-out{ flex:1 1 100%; font-size:.78rem; word-break:break-all; background: var(--surface-2); padding:.5rem .7rem; border-radius:8px; min-height:1.8rem; }
+.hash-out:empty{ display:none; }
+
+/* ---------- Etiquetas de colonias en el mapa ---------- */
+.colonia-lbl{ display:inline-block; transform: translate(-50%, -50%); font-size:.62rem; font-weight:600; letter-spacing:.01em; white-space:nowrap; color:#475569; background: rgba(255,255,255,.82); padding:.08rem .35rem; border-radius:4px; pointer-events:none; text-transform:capitalize; }
+.colonia-lbl.com{ color: var(--brand-blue); font-size:.7rem; font-weight:700; }
+.colonia-lbl.fracc{ color:#64748B; font-weight:500; }
+.kml-toggle{ margin-left:.4rem; }
+
+/* ---------- Impresión / Informe PDF ---------- */
+.print-header{ display:none; }
+@media print{
+  @page{ size: A4 portrait; margin: 12mm; }
+  html, body{ background:#fff !important; height:auto !important; overflow:visible !important; }
+  #particles, .topbar, .sidebar, .sidebar-backdrop, .toast, .login, .splash, .modal, .view-tools, .chart-tabs, .alerts-card .chip-count, .print-btn{ display:none !important; }
+  .app{ display:block !important; }
+  .view{ display:none !important; padding:0 !important; }
+  body.printing #view-overview{ display:block !important; }
+  body.printing #view-trends{ display:block !important; page-break-before: always; }
+  .print-header{ display:flex !important; align-items:center; gap:14px; margin-bottom:12px; padding-bottom:10px; border-bottom:2px solid #002C72; }
+  .print-logo{ height:46px; }
+  .print-title{ font-size:15pt; font-weight:700; color:#002C72; }
+  .print-meta{ font-size:9pt; color:#475569; }
+  .hero{ -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius:12px; padding:14px 18px; }
+  .hero::after{ display:none; }
+  .kpi-grid{ grid-template-columns: repeat(3, 1fr) !important; gap:8px; }
+  .kpi-card, .chart-card, .stat{ break-inside: avoid; box-shadow:none !important; border:1px solid #E2E8F0; }
+  .charts-row, .charts-row-rev, .charts-row-even{ grid-template-columns: 1fr 1fr !important; gap:8px; }
+  .chart-body{ height:220px !important; }
+  .trend-main{ height:260px !important; }
+  .trend-stack{ height:240px !important; }
+  .trend-table{ min-width:0 !important; font-size:8pt; }
+  .data-table th, .data-table td{ padding:.3rem .45rem; }
+  .idle-list{ max-height:none; }
+  .view-head{ margin-bottom:.4rem; }
+  a[href]::after{ content:''; }
+}
+
+/* ---------- Temas prioritarios (v5) ---------- */
+.pri-strip{ display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:.8rem; margin-bottom:1rem; }
+.pri-kpi{ position:relative; background: var(--surface); border:1px solid var(--border-soft); border-radius:16px; padding:.95rem 1.1rem 1rem 1.25rem; overflow:hidden; }
+.pri-kpi::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--c); }
+.pri-kpi-lbl{ font-size:.78rem; color: var(--text-muted); font-weight:500; }
+.pri-kpi-val{ font-size:1.75rem; font-weight:700; color: var(--c); line-height:1.1; margin-top:.3rem; font-variant-numeric: tabular-nums; letter-spacing:-.02em; }
+.pri-kpi-foot{ margin-top:.4rem; display:flex; flex-wrap:wrap; gap:.3rem .5rem; align-items:center; }
+.pri-kpi-foot small{ font-size:.72rem; color: var(--text-muted); }
+.pri-grid{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:.9rem; align-items:start; }
+.pri-card{ background: var(--surface); border:1px solid var(--border-soft); border-radius:18px; padding:1.1rem 1.15rem 1.2rem; border-top:4px solid var(--c); }
+.pri-head{ display:flex; align-items:center; gap:.6rem; margin-bottom:.6rem; }
+.pri-icon{ width:38px; height:38px; border-radius:12px; display:grid; place-items:center; font-size:1.2rem; background: color-mix(in srgb, var(--c) 12%, white); }
+.pri-head h3{ font-size:1.05rem; font-weight:700; color: var(--brand-blue); }
+.pri-headline{ padding:.8rem 1rem; border-radius:14px; background: color-mix(in srgb, var(--c) 8%, white); margin-bottom:.9rem; }
+.pri-headline-val{ font-size:2.1rem; font-weight:700; color: var(--c); line-height:1.05; letter-spacing:-.03em; font-variant-numeric: tabular-nums; }
+.pri-headline-lbl{ font-size:.9rem; color: var(--text); margin-top:.2rem; }
+.pri-headline-lbl small{ display:block; font-size:.74rem; color: var(--text-muted); margin-top:.1rem; }
+.pri-headline-meta{ display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.5rem; }
+.pri-group{ margin-top:.9rem; }
+.pri-group h4{ font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color: var(--text-muted); margin-bottom:.45rem; }
+.pri-list{ list-style:none; display:grid; gap:.5rem; }
+.pri-list li.is-sub{ padding-left:.9rem; }
+.pri-list li.is-sub .pri-lbl{ color: var(--text-muted); font-size:.8rem; }
+.pri-list li.is-sub .pri-num{ font-size:.85rem; color: var(--text-muted); }
+.pri-list li.is-strong .pri-num{ font-size:1.05rem; }
+.pri-row{ display:flex; justify-content:space-between; align-items:baseline; gap:.6rem; }
+.pri-lbl{ font-size:.86rem; color: var(--text); }
+.pri-num{ font-weight:700; color: var(--brand-blue); font-variant-numeric: tabular-nums; white-space:nowrap; }
+.pri-bar{ height:6px; border-radius:99px; background: var(--surface-2); margin-top:.3rem; overflow:hidden; }
+.pri-bar span{ display:block; height:100%; border-radius:99px; transition: width .7s cubic-bezier(.2,.8,.2,1); }
+.pri-meta{ display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.25rem; }
+.pri-meta:empty{ display:none; }
+.pri-delta, .pri-ratio{ font-size:.7rem; font-weight:600; padding:.1rem .5rem; border-radius:99px; white-space:nowrap; }
+.pri-delta.up{ background: rgba(116,186,71,.16); color: var(--brand-green-dark); }
+.pri-delta.down{ background: rgba(254,111,97,.16); color:#C7453A; }
+.pri-delta.flat{ background: var(--surface-2); color: var(--text-muted); }
+.pri-ratio{ background: rgba(244,76,127,.12); color:#B8355F; }
+.pri-facts{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:.5rem; }
+.pri-fact{ background: var(--surface-2); border-radius:12px; padding:.6rem .7rem; display:flex; flex-direction:column; gap:.1rem; }
+.pri-fact strong{ font-size:1.25rem; color: var(--brand-blue); font-variant-numeric: tabular-nums; }
+.pri-fact span{ font-size:.76rem; color: var(--text); }
+.pri-fact small{ font-size:.68rem; color: var(--text-muted); }
+@media (max-width: 1200px){ .pri-grid{ grid-template-columns: 1fr 1fr; } .pri-strip{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 760px){ .pri-grid{ grid-template-columns: 1fr; } .pri-facts{ grid-template-columns: 1fr 1fr 1fr; } }
+@media (max-width: 480px){ .pri-strip{ grid-template-columns: 1fr; } .pri-facts{ grid-template-columns: 1fr; } }
+@media print{ .pri-grid{ grid-template-columns: 1fr 1fr 1fr; } body.printing #view-priority{ display:none !important; } }
