@@ -11,6 +11,7 @@ const STATE = {
   selectedUser: null,
   periods: [],            // lista de {period, label, summary, modules}
   currentPeriodIdx: 0,
+  aggKey: null,           // null = un mes; 'all' | 'y2025' | 'y2026' = acumulado
   charts: {},
   map: null,
   mapMarkers: []
@@ -281,15 +282,79 @@ function initNav(){
   const sel = $('#periodSelect');
   buildPeriodOptions();
   sel.addEventListener('change', () => {
-    STATE.currentPeriodIdx = +sel.value;
+    if(isNaN(+sel.value)){ STATE.aggKey = sel.value; }
+    else { STATE.aggKey = null; STATE.currentPeriodIdx = +sel.value; }
     refreshAll();
   });
 }
 
 /* Llena el selector de período agrupando los meses por año (más reciente arriba) */
+/* ---------- PERÍODOS ACUMULADOS (todo el histórico / por año) ---------- */
+const isPartialPeriod = (p) => !!p.partial || /parcial/i.test(p.label || '');
+const MES_CORTO = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const periodMonthLabel = (p) => { const [y,m] = p.period.split('-'); return `${MES_CORTO[+m-1]} ${y}`; };
+
+function aggregatePeriods(list, key, label){
+  const modules = {}, gender = { h:0, m:0 };
+  list.forEach(p => {
+    Object.entries(p.modules || {}).forEach(([id, m]) => {
+      const acc = modules[id] = modules[id] || { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 };
+      Object.keys(acc).forEach(k => acc[k] += (m[k] || 0));
+    });
+    if(p.gender){ gender.h += p.gender.h || 0; gender.m += p.gender.m || 0; }
+  });
+  const summary = { medicos:0, odonto:0, enfermeria:0, rehab:0, mental:0, nutri:0 };
+  list.forEach(p => { const sp = p.summary || aggregateModuleSummary(p.modules); Object.keys(summary).forEach(k => summary[k] += sp[k] || 0); });
+  const first = list[0], last = list[list.length-1];
+  return {
+    period: key, virtual: true, months: list.length, list,
+    label: label || key,
+    range: list.length ? `${periodMonthLabel(first)} → ${periodMonthLabel(last)}` : '',
+    summary, gender: (gender.h + gender.m) ? gender : null, modules
+  };
+}
+
+/* Opciones de acumulado disponibles según los meses cargados (se excluye el mes en captura) */
+function aggregateOptions(){
+  const complete = STATE.periods.filter(p => !isPartialPeriod(p)).sort((a,b) => a.period.localeCompare(b.period));
+  if(!complete.length) return [];
+  const opts = [];
+  const all = aggregatePeriods(complete, 'all');
+  all.label = `Todo el histórico (${all.range})`;
+  opts.push(all);
+  const years = [...new Set(complete.map(p => p.period.slice(0,4)))].sort().reverse();
+  years.forEach(y => {
+    const list = complete.filter(p => p.period.startsWith(y));
+    const agg = aggregatePeriods(list, 'y' + y);
+    agg.label = list.length === 12 ? `Año ${y} (completo)` : `Año ${y} (${agg.range})`;
+    opts.push(agg);
+  });
+  return opts;
+}
+
+function currentPeriod(){
+  if(STATE.aggKey){
+    const found = aggregateOptions().find(a => a.period === STATE.aggKey);
+    if(found) return found;
+    STATE.aggKey = null;
+  }
+  return STATE.periods[STATE.currentPeriodIdx];
+}
+
 function buildPeriodOptions(){
   const sel = $('#periodSelect');
   sel.innerHTML = '';
+  const aggs = aggregateOptions();
+  if(aggs.length){
+    const og = document.createElement('optgroup');
+    og.label = 'Acumulados';
+    aggs.forEach(a => {
+      const o = document.createElement('option');
+      o.value = a.period; o.textContent = a.label;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  }
   const groups = {};
   STATE.periods.forEach((p, idx) => {
     const y = (p.period || '').slice(0,4) || 'Otros';
@@ -305,7 +370,7 @@ function buildPeriodOptions(){
     });
     sel.appendChild(og);
   });
-  sel.value = STATE.currentPeriodIdx;
+  sel.value = STATE.aggKey || STATE.currentPeriodIdx;
 }
 
 const SUM_TOTAL = (s) => (s.medicos||0)+(s.odonto||0)+(s.enfermeria||0)+(s.rehab||0)+(s.mental||0)+(s.nutri||0);
@@ -331,21 +396,21 @@ function animateNumber(el, target, duration = 1400){
   requestAnimationFrame(step);
 }
 
-function setTrend(el, current, prev){
+function setTrend(el, current, prev, suffix = 'vs mes anterior'){
   if(prev === undefined || prev === null){ el.textContent=''; return; }
   const diff = current - prev;
   const pct = prev === 0 ? 0 : (diff / prev) * 100;
   const arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '—';
   const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
   el.className = `kpi-trend ${cls}`;
-  el.textContent = `${arrow} ${Math.abs(pct).toFixed(1)}% vs mes anterior`;
+  el.textContent = `${arrow} ${Math.abs(pct).toFixed(1)}% ${suffix}`;
 }
 
 /* ============================================================
    RESUMEN / KPIs
    ============================================================ */
 function renderOverview(){
-  const cur = STATE.periods[STATE.currentPeriodIdx];
+  const cur = currentPeriod();
   if(!cur) return;
   // Verificar que Chart.js esté disponible
   if(typeof Chart === 'undefined'){
@@ -356,11 +421,20 @@ function renderOverview(){
   if(sizeEl && sizeEl.parentElement.clientWidth === 0){
     return requestAnimationFrame(renderOverview);
   }
-  const prev = STATE.periods[STATE.currentPeriodIdx-1];
+  // Contra qué se compara: el mes anterior, o el mismo tramo del año anterior si es un acumulado anual.
+  let prev = null, trendSuffix = 'vs mes anterior';
+  if(!cur.virtual){
+    prev = STATE.periods[STATE.currentPeriodIdx-1];
+  } else if(cur.period.startsWith('y')){
+    const y = +cur.period.slice(1);
+    const months = new Set(cur.list.map(p => p.period.slice(5)));
+    const prevList = STATE.periods.filter(p => p.period.startsWith(String(y-1)) && months.has(p.period.slice(5)) && !isPartialPeriod(p));
+    if(prevList.length === cur.list.length){ prev = aggregatePeriods(prevList, 'prev'); trendSuffix = `vs mismo período de ${y-1}`; }
+  }
   const s = cur.summary || aggregateModuleSummary(cur.modules);
   const total = s.medicos + s.odonto + s.enfermeria + s.rehab + s.mental + s.nutri;
 
-  $('#heroPeriod').textContent = cur.label;
+  $('#heroPeriod').textContent = cur.virtual ? `${cur.label.replace(/ \(.*\)$/, '')} · ${cur.months} meses (${cur.range})` : cur.label;
 
   animateNumber($('#kpiTotal'), total);
   animateNumber($('#kpiNutri'), s.nutri);
@@ -380,16 +454,17 @@ function renderOverview(){
   if(prev){
     const sp = prev.summary || aggregateModuleSummary(prev.modules);
     const totalPrev = sp.medicos + sp.odonto + sp.enfermeria + sp.rehab + sp.mental + sp.nutri;
-    setTrend($('#kpiTotalTrend'), total, totalPrev);
-    setTrend($('#kpiMedicosTrend'), s.medicos, sp.medicos);
-    setTrend($('#kpiOdontoTrend'), s.odonto, sp.odonto);
-    setTrend($('#kpiEnfermeriaTrend'), s.enfermeria, sp.enfermeria);
-    setTrend($('#kpiRehabTrend'), s.rehab, sp.rehab);
-    setTrend($('#kpiMentalTrend'), s.mental, sp.mental);
-    setTrend($('#kpiNutriTrend'), s.nutri, sp.nutri);
+    setTrend($('#kpiTotalTrend'), total, totalPrev, trendSuffix);
+    setTrend($('#kpiMedicosTrend'), s.medicos, sp.medicos, trendSuffix);
+    setTrend($('#kpiOdontoTrend'), s.odonto, sp.odonto, trendSuffix);
+    setTrend($('#kpiEnfermeriaTrend'), s.enfermeria, sp.enfermeria, trendSuffix);
+    setTrend($('#kpiRehabTrend'), s.rehab, sp.rehab, trendSuffix);
+    setTrend($('#kpiMentalTrend'), s.mental, sp.mental, trendSuffix);
+    setTrend($('#kpiNutriTrend'), s.nutri, sp.nutri, trendSuffix);
   } else {
+    const txt = cur.virtual ? `Acumulado de ${cur.months} meses` : 'Primer mes registrado';
     ['Total','Medicos','Odonto','Enfermeria','Rehab','Mental','Nutri'].forEach(k => {
-      const el = $(`#kpi${k}Trend`); if(el){ el.className = 'kpi-trend flat'; el.textContent = 'Primer mes registrado'; }
+      const el = $(`#kpi${k}Trend`); if(el){ el.className = 'kpi-trend flat'; el.textContent = (cur.virtual && k !== 'Total') ? `promedio ${fmt(Math.round((s[k.toLowerCase()] || 0) / cur.months))} al mes` : txt; }
     });
   }
 
@@ -438,8 +513,11 @@ function renderIdleModules(cur){
 
 function renderSparkline(){
   if(typeof Chart === 'undefined') return;
-  // Pequeño sparkline en el KPI principal con los últimos 8 períodos
-  const last = STATE.periods.slice(Math.max(0, STATE.currentPeriodIdx - 7), STATE.currentPeriodIdx + 1);
+  // Pequeño sparkline en el KPI principal: últimos 8 meses, o todo el tramo si es un acumulado
+  const cur = currentPeriod();
+  const last = cur.virtual ? cur.list : STATE.periods.slice(Math.max(0, STATE.currentPeriodIdx - 7), STATE.currentPeriodIdx + 1);
+  const cap = $('#sparkCap');
+  if(cap) cap.textContent = cur.virtual ? `Mes a mes (${cur.range})` : 'Tendencia de los últimos 8 meses';
   const data = last.map(p => {
     const s = p.summary || aggregateModuleSummary(p.modules);
     return s.medicos + s.odonto + s.enfermeria + s.rehab + s.mental + s.nutri;
@@ -564,7 +642,7 @@ function initChartTabs(){
     $$('[data-chart-mode]').forEach(x => x.classList.remove('active'));
     b.classList.add('active');
     const mode = b.dataset.chartMode;
-    const cur = STATE.periods[STATE.currentPeriodIdx];
+    const cur = currentPeriod();
     const s = cur.summary || aggregateModuleSummary(cur.modules);
     renderDistChart(s, mode);
   }));
@@ -574,7 +652,7 @@ function initChartTabs(){
    MÓDULOS (lista detallada)
    ============================================================ */
 function renderModules(){
-  const cur = STATE.periods[STATE.currentPeriodIdx];
+  const cur = currentPeriod();
   const search = $('#moduleSearch').value.toLowerCase();
   const status = $('#statusFilter').value;
   const sortBy = $('#moduleSort') ? $('#moduleSort').value : 'name';
@@ -703,7 +781,7 @@ function drawMapMarkers(){
   STATE.mapMarkers.forEach(m => STATE.map.removeLayer(m));
   STATE.mapMarkers = [];
 
-  const cur = STATE.periods[STATE.currentPeriodIdx];
+  const cur = currentPeriod();
   const seen = {};   // coordenadas ya usadas → separa módulos que comparten sede (matutino/vespertino)
 
   // Iniciales inteligentes: primera letra de cada palabra significativa
@@ -1212,6 +1290,7 @@ async function saveCurrentData(){
   if(r) toast(`Mes ${label} guardado y sincronizado`, 'success');
   else toast(`Mes ${label} guardado (local)`, 'success');
 
+  STATE.aggKey = null;
   STATE.currentPeriodIdx = STATE.periods.findIndex(p => p.period === period);
   refreshAll();
 }
@@ -1240,6 +1319,7 @@ function renderHistory(){
   });
 
   list.querySelectorAll('.history-load').forEach(b => b.addEventListener('click', () => {
+    STATE.aggKey = null;
     STATE.currentPeriodIdx = STATE.periods.findIndex(p => p.period === b.dataset.period);
     $('#periodSelect').value = STATE.currentPeriodIdx;
     document.querySelector('[data-view="overview"]').click();

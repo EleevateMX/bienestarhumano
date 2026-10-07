@@ -9,15 +9,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- Librerías incluidas en el repositorio (no dependen de CDN ni de bloqueadores) -->
-<link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=4" />
-<script src="vendor/leaflet/leaflet.js?v=4"></script>
-<script src="vendor/chart.umd.js?v=4"></script>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=5" />
+<script src="vendor/leaflet/leaflet.js?v=5"></script>
+<script src="vendor/chart.umd.js?v=5"></script>
 <!-- Respaldo por si el archivo local no cargó -->
 <script>
   if(typeof Chart === 'undefined') document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"><\/script>');
   if(typeof L === 'undefined') document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');
 </script>
-<link rel="stylesheet" href="styles.css?v=4" />
+<link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
 
@@ -210,7 +210,7 @@
       </div>
       <div class="hero-side">
         <div class="hero-spark"><canvas id="sparkTotal" aria-label="Tendencia de los últimos 8 meses"></canvas></div>
-        <p class="hero-spark-cap">Tendencia de los últimos 8 meses</p>
+        <p class="hero-spark-cap" id="sparkCap">Tendencia de los últimos 8 meses</p>
       </div>
       <div class="mix" id="mixBar" role="img" aria-label="Composición de las atenciones por servicio"></div>
       <ul class="hero-facts" id="heroFacts"></ul>
@@ -514,7 +514,7 @@
 <!-- Toast -->
 <div id="toast" class="toast"></div>
 
-<script src="data.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="data.js?v=5"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
